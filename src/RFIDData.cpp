@@ -266,6 +266,9 @@ bool writeRFIDData(MFRC522 &mfrc522, MFRC522::MIFARE_Key &key, const RFIDData &d
     {
         Serial.println("[writeRFIDData] Write FAILED!");
     }
+
+    formSubmitted = true;
+
     return result;
 }
 

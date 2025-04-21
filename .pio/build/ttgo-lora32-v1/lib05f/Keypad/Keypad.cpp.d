@@ -1,6 +1,7 @@
-.pio/build/ttgo-lora32-v1/lib523/ArduinoHttpClient/HttpClient.cpp.o: \
- .pio/libdeps/ttgo-lora32-v1/ArduinoHttpClient/src/HttpClient.cpp \
- .pio/libdeps/ttgo-lora32-v1/ArduinoHttpClient/src/HttpClient.h \
+.pio/build/ttgo-lora32-v1/lib05f/Keypad/Keypad.cpp.o: \
+ .pio/libdeps/ttgo-lora32-v1/Keypad/src/Keypad.cpp \
+ .pio/libdeps/ttgo-lora32-v1/Keypad/src/Keypad.h \
+ .pio/libdeps/ttgo-lora32-v1/Keypad/src/Key.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp_arduino_version.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/freertos/FreeRTOS.h \
@@ -132,6 +133,4 @@
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/spi_flash/include/esp_spi_flash_counters.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
- C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
- C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/Client.h \
- .pio/libdeps/ttgo-lora32-v1/ArduinoHttpClient/src/b64.h
+ C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h

@@ -10,6 +10,7 @@
             "includePath": [
                 "c:/Users/OEM/Documents/GitHub/gameUnit/include",
                 "c:/Users/OEM/Documents/GitHub/gameUnit/src",
+                "c:/Users/OEM/Documents/GitHub/gameUnit/.pio/libdeps/ttgo-lora32-v1/Keypad/src",
                 "c:/Users/OEM/Documents/GitHub/gameUnit/.pio/libdeps/ttgo-lora32-v1/ArduinoHttpClient/src",
                 "c:/Users/OEM/Documents/GitHub/gameUnit/.pio/libdeps/ttgo-lora32-v1/MFRC522/src",
                 "c:/Users/OEM/Documents/GitHub/gameUnit/.pio/libdeps/ttgo-lora32-v1/ESPAsyncWebServer-esphome/src",
@@ -249,6 +250,7 @@
                 "path": [
                     "c:/Users/OEM/Documents/GitHub/gameUnit/include",
                     "c:/Users/OEM/Documents/GitHub/gameUnit/src",
+                    "c:/Users/OEM/Documents/GitHub/gameUnit/.pio/libdeps/ttgo-lora32-v1/Keypad/src",
                     "c:/Users/OEM/Documents/GitHub/gameUnit/.pio/libdeps/ttgo-lora32-v1/ArduinoHttpClient/src",
                     "c:/Users/OEM/Documents/GitHub/gameUnit/.pio/libdeps/ttgo-lora32-v1/MFRC522/src",
                     "c:/Users/OEM/Documents/GitHub/gameUnit/.pio/libdeps/ttgo-lora32-v1/ESPAsyncWebServer-esphome/src",
@@ -485,7 +487,7 @@
                 ]
             },
             "defines": [
-                "PLATFORMIO=60116",
+                "PLATFORMIO=60118",
                 "ARDUINO_TTGO_LoRa32_V1",
                 "HAVE_CONFIG_H",
                 "MBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\"",

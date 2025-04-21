@@ -34,6 +34,7 @@ struct Creature {
 };
 extern RFIDData pendingData;
 extern bool dataPending;
+//extern bool formSubmitted;
 
 uint8_t encodeBools(bool A, bool B, bool C, bool D);
 void decodeBools(uint8_t bools, bool &A, bool &B, bool &C, bool &D);
