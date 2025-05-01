@@ -13,13 +13,8 @@
 #define MISO_PIN 33 // Master In Slave Out
 #define MOSI_PIN 26 // Master Out Slave In
 
-extern MFRC522 mfrc522;
+extern MFRC522 mfrc522; // Declare mfrc522 without defining it
 extern MFRC522::MIFARE_Key key;
-extern RFIDData pendingData;
-extern bool dataPending;
-// extern TFT_eSPI tft;
-extern bool formSubmitted;
-
-// extern MFRC522::Uid lastCardUid;
+extern bool allChallBools;
 
 #endif // GLOBALDEFS_H

@@ -8,33 +8,39 @@
 // Struct to hold RFID data
 struct RFIDData
 {
-    String name;      // 6 characters max
-    int age;          // 00-99
-    int coins;        // 00-99
-    int creatureType; // 00-34 (0 reserved for 'no creature')
-    uint8_t bools;    // 0-15 representing 4 boolean values
+    String name;       // 10 characters max
+    //int yearLevel;     // 00-99
+    int challengeCode; // 00-99
+    int wrongGuesses;  // 00-34 (0 reserved for 'no creature')
+    uint8_t bools;     // 0-15 representing 4 boolean values
+    // String creature;   // New field
 };
 
 // Add RFIDParsed struct BEFORE references to parseRawRFID
 struct RFIDParsed
 {
-    int age;
-    int coins;
-    int creatureType;
-    int boolVal;
+    uint8_t boolVal;
+    //int yearLevel;     // 00-99
+    int challengeCode; // 00-99
+    int wrongGuesses;  // 00-34 (0 reserved for 'no creature')
     String name;
 };
 
-struct Creature {
-    int trainerAge;
-    int coins;
-    int creatureType;
+struct Creature
+{
+    //int yearLevel;       // 1 digit (1-9)
+    int challengeCode;   // 3 digits (000-999)
+    int wrongGuesses;    // 1 digit (0-9)
+    int boolVal;         // unchanged
+    //int creatureType;    // Now 0-99
+    //int artifactValue;   // New field, 0-99
+    /////////////String creatureName; // Increased to 10 chars max
+    // int creatureType;    // 2 digit (0-9)
     String customName;
-    int intVal; // Ensure this member exists if needed
+    int coins; // New field
 };
-extern RFIDData pendingData;
+// extern RFIDData pendingData; // Remove or comment out this line
 extern bool dataPending;
-//extern bool formSubmitted;
 
 uint8_t encodeBools(bool A, bool B, bool C, bool D);
 void decodeBools(uint8_t bools, bool &A, bool &B, bool &C, bool &D);
@@ -47,5 +53,6 @@ RFIDParsed parseRawRFID(const String &raw);
 
 // Add decode(...) prototype here:
 Creature decode(int numericPart, const String &namePart);
+bool clearChallBools(MFRC522 &mfrc522, MFRC522::MIFARE_Key &key, const Creature &creature);
 
 #endif // RFIDDATA_H

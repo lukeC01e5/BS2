@@ -1,4 +1,4 @@
-.pio/build/ttgo-lora32-v1/src/main.cpp.o: src/main.cpp \
+.pio/build/ttgo-lora32-v1/src/main1.cpp.o: src/main1.cpp \
  .pio/libdeps/ttgo-lora32-v1/Keypad/src/Keypad.h \
  .pio/libdeps/ttgo-lora32-v1/Keypad/src/Key.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
@@ -230,4 +230,7 @@
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Fonts/Custom/Yellowtail_32.h \
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Smooth_font.h \
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Button.h \
- .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Sprite.h
+ .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Sprite.h src/RFIDData.h \
+ .pio/libdeps/ttgo-lora32-v1/MFRC522/src/MFRC522.h \
+ .pio/libdeps/ttgo-lora32-v1/MFRC522/src/require_cpp11.h \
+ .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h src/GlobalDefs.h
