@@ -9,7 +9,7 @@ MFRC522::MIFARE_Key key;
 
 bool allChallBools = false; // Initialize as needed
 
-RFIDData pendingData;
+//RFIDData pendingData;
 bool dataPending = false;
 bool formSubmitted = false;
 

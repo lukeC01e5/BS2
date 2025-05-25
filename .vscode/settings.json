@@ -1,5 +1,5 @@
 {
-    "idf.portWin": "COM8",
+    "idf.portWin": "COM6",
     "files.associations": {
         "array": "cpp",
         "deque": "cpp",

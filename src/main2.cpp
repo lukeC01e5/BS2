@@ -1,23 +1,25 @@
 #include <Keypad.h>
-#include <TFT_eSPI.h>
 #include <Arduino.h>
 #include <SPI.h>
-#include "RFIDData.h"
+//#include "RFIDData.h"
 #include "GlobalDefs.h"
 #include "quizAnswers.h"
+#include "quizQuestions.h"
+#include "animals.h"
+#include <esp_system.h>  // Add this
+#include "displayFunctions.h"
 
-//////////////////////////
-///////  tavern ///////
-/////////////////////////
+#define ZONE "water"
 
 // Keypad configuration (4x1 keypad)
 const byte ROWS = 4;
 const byte COLS = 1;
 char keys[ROWS][COLS] = {
-    {'1'},
-    {'2'},
-    {'3'},
-    {'4'}};
+    {'1'},    //red
+    {'2'},    //green
+    {'3'},    //blue
+    {'4'}};   //yellow;
+
 byte rowPins[ROWS] = {21, 17, 2, 15};
 byte colPins[COLS] = {12};
 Keypad keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
@@ -42,7 +44,7 @@ struct Player
     String playerName;
 };
 
-void quizDisplay(int codeValue, int questionNumber);
+int quizDisplay(int codeValue, int questionNumber);
 String formatCode(int codeValue);
 int randomInRangeExclude(int minRange, int maxRange, int excludeVal);
 bool directWriteRFID(MFRC522 &rfid, MFRC522::MIFARE_Key &key, const String &data, byte blockNumber);
@@ -57,6 +59,33 @@ bool postToDBAdd5Coin()
     return true;
 }
 
+// Add a small helper function to pick a random creature from ANIMALS[]
+// based on ID and environment Zone:
+AnimalInfo pickRandomCreature(int desiredId, const char *zone)
+{
+    // Build a list of matching creatures
+    const int animalCount = sizeof(ANIMALS) / sizeof(ANIMALS[0]);
+    AnimalInfo candidates[animalCount];
+    int count = 0;
+    for (int i = 0; i < animalCount; i++)
+    {
+        if (ANIMALS[i].id == desiredId && strcmp(ANIMALS[i].environment, zone) == 0)
+        {
+            candidates[count++] = ANIMALS[i];
+        }
+    }
+
+    // If none match, return a default
+    if (count == 0)
+    {
+        return {"NO_CREATURE", 1, "normal", "NC"};
+    }
+
+    // Otherwise pick a random one from the filtered list
+    int index = random(0, count);
+    return candidates[index];
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -64,17 +93,17 @@ void setup()
 
     // Initialize TFT, etc...
     tft.init();
-    tft.setRotation(3);
+    tft.setRotation(1);
     tft.setTextSize(3);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0, 0);
-    tft.println("TFT Initialized");
+    // tft.println("TFT Initialized");
 
     // Start SPI
     SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, SS_PIN);
 
-    // This explicitly sets the default factory key (0xFF) for all 6 bytes
+    // Set factory key bytes to 0xFF
     for (int i = 0; i < 6; i++)
     {
         key.keyByte[i] = 0xFF;
@@ -82,29 +111,31 @@ void setup()
 
     // Initialize MFRC522
     mfrc522.PCD_Init();
+    delay(1000); // Some settling time
 
-    delay(1000); // Give the MFRC522 some time to settle
+    // Comment out or remove the keypad-wait:
+    // tft.fillScreen(TFT_BLACK);
+    // tft.setCursor(0, 0);
+    // tft.setTextColor(TFT_GREEN, TFT_BLACK);
+    // tft.println("Press any key to start...");
+    // while (keypad.getKey() == NO_KEY)
+    // {
+    //     delay(100);
+    // }
+    // tft.fillScreen(TFT_BLACK);
 
-    // Wait for user to press keypad before continuing
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(0, 0);
-    tft.setTextColor(TFT_GREEN, TFT_BLACK);
-    tft.println("Press any key to start...");
-    while (keypad.getKey() == NO_KEY)
-    {
-        delay(100);
-    }
-    tft.fillScreen(TFT_BLACK);
     Serial.println("=== Setup Complete ===\n");
 }
 
+// The code now proceeds directly to loop() and waits for an RFID tag.
 void loop()
 {
     // Create a UserTag object
     UserTag userTag;
 
     // Prompt user to present RFID
-    tft.println("Present RFID Tag...");
+    tft.fillScreen(TFT_BLACK);
+    tft.println("Insert Key");
     while (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial())
     {
         delay(100);
@@ -172,39 +203,39 @@ void loop()
         }
     }
 
-    // Look up all four values for this challengeCode
-    String val1, val2, val3, val4;
-    if (player.challengeCode >= 0 && player.challengeCode < 10)
+    // Look up all three values for this challengeCode
+    String val1, val2, val3;
+    if (player.challengeCode >= 0 && player.challengeCode < 50)
     {
         val1 = quizAnswers[player.challengeCode].value1;
         val2 = quizAnswers[player.challengeCode].value2;
         val3 = quizAnswers[player.challengeCode].value3;
-        val4 = quizAnswers[player.challengeCode].value4;
     }
     else
     {
         val1 = "(Out of Range)";
         val2 = "(Out of Range)";
         val3 = "(Out of Range)";
-        val4 = "(Out of Range)";
     }
 
-    // Put all 4 question codes into an array so each can be asked in sequence
-    String questionVals[4] = {val1, val2, val3, val4};
+    // Put all 3 question codes into an array so each can be asked in sequence
+    String questionVals[3] = {val1, val2, val3};
 
     // Keep track of how many times the user answered incorrectly
     int totalWrongAttempts = 0;
 
     // Ask each question in turn
-    for (int qIndex = 0; qIndex < 4; qIndex++)
+    for (int qIndex = 0; qIndex < 3; qIndex++)
     {
         bool doneWithThisQuestion = false;
         while (!doneWithThisQuestion)
         {
-            // Now pass questionVals[qIndex] and the questionNumber
             int thisCode = questionVals[qIndex].toInt();
-            Serial.println("[DEBUG] Asking question # " + String(qIndex + 1) + " with codeValue=" + String(thisCode));
-            quizDisplay(thisCode, qIndex + 1);
+            Serial.println("[DEBUG] Asking question # " + String(qIndex + 1) +
+                           " with codeValue=" + String(thisCode));
+
+            // quizDisplay returns the index (0..3) of the correct box
+            int correctIndex = quizDisplay(thisCode, qIndex + 1);
 
             // Wait for key press
             while (true)
@@ -213,27 +244,43 @@ void loop()
                 if (k == NO_KEY)
                 {
                     delay(50);
-                    continue;
+                    continue; // wait for a key again
                 }
                 Serial.println("[DEBUG] User pressed key: " + String(k));
 
+                // Map '1','2','3','4' to box indices 0..3
+                int pressedBox = -1;
                 if (k == '1')
+                    pressedBox = 0; // red
+                else if (k == '2')
+                    pressedBox = 1; // yellow
+                else if (k == '3')
+                    pressedBox = 2; // blue
+                else if (k == '4')
+                    pressedBox = 3; // green
+
+                if (pressedBox == correctIndex)
                 {
+                    showSmileyFace(tft);
+                    // Correct!
                     tft.fillScreen(TFT_BLACK);
                     tft.setCursor(0, 0);
                     tft.setTextColor(TFT_GREEN, TFT_BLACK);
                     tft.println("Correct!");
-                    Serial.println("[DEBUG] User answered question # " + String(qIndex + 1) + " correctly.");
-                    doneWithThisQuestion = true;
+                    Serial.println("[DEBUG] User answered question # " +
+                                   String(qIndex + 1) + " correctly.");
+                    doneWithThisQuestion = true; // exit while
                 }
-                else if (k == '2' || k == '3' || k == '4')
+                else
                 {
+                    // Wrong!
                     totalWrongAttempts++;
                     tft.fillScreen(TFT_BLACK);
                     tft.setCursor(0, 0);
                     tft.setTextColor(TFT_RED, TFT_BLACK);
                     tft.println("Try again!");
-                    Serial.println("[DEBUG] Wrong answer. totalWrongAttempts=" + String(totalWrongAttempts));
+                    Serial.println("[DEBUG] Wrong answer. totalWrongAttempts=" +
+                                   String(totalWrongAttempts));
                     delay(1000);
                 }
                 break; // break inner while to re-ask or proceed
@@ -241,41 +288,77 @@ void loop()
         }
     }
 
-    // After 4 correct answers, update player fields
+    // After 3 correct answers, update player fields
     // Try posting 5 coin to DB
     bool postWorked = postToDBAdd5Coin();
 
     // Only update player.boolVal and write to RFID if postWorked
     if (postWorked)
     {
-        // If DB post succeeded, set boolVal to 0 (which will appear as "00" in the tag)
-        player.boolVal = 0;
+        // Set boolVal to 15
+        player.boolVal = 15;
 
-        // Adjust wrongGuesses & build newBlockData as usual
+        // Randomly pick a value 0..30
+        int randomVal = random(0, 31);
+        String creatureCode = "";
+        String creatureName = "";
+
+        if (randomVal <= 20)
+        {
+            // No creature acquired
+            tft.fillScreen(TFT_RED);
+            tft.setCursor(0, 0);
+            tft.setTextColor(TFT_BLACK, TFT_RED);
+            tft.println("No creature acquired");
+        }
+        else if (randomVal <= 27)
+        {
+            // Pick an ID=2 creature for the defined ZONE
+            AnimalInfo chosen = pickRandomCreature(2, ZONE);
+            creatureCode = chosen.code;
+            creatureName = chosen.name;
+
+            tft.fillScreen(TFT_GREEN);
+            tft.setCursor(0, 0);
+            tft.setTextColor(TFT_BLACK, TFT_GREEN);
+            tft.println("Creature Acquired: " + String(creatureName));
+        }
+        else // randomVal between 28 and 30
+        {
+            // Pick an ID=3 creature for the defined ZONE
+            AnimalInfo chosen = pickRandomCreature(3, ZONE);
+            creatureCode = chosen.code;
+            creatureName = chosen.name;
+
+            tft.fillScreen(TFT_GREEN);
+            tft.setCursor(0, 0);
+            tft.setTextColor(TFT_BLACK, TFT_GREEN);
+            tft.println("Creature Acquired: " + String(creatureName));
+        }
+
+        // Decrease wrongGuesses by the totalWrongAttempts
         player.wrongGuesses -= totalWrongAttempts;
         if (player.wrongGuesses < 0)
             player.wrongGuesses = 0;
         char wgChar = (player.wrongGuesses < 10) ? (char)('0' + player.wrongGuesses) : '9';
-        String newBlockData = formatCode(player.challengeCode) + wgChar + "?" +
-                              String(player.boolVal) + "%" + player.playerName;
 
-        // Show original and new data on Serial/TFT
+        // Build newBlockData. If no creature is acquired, creatureCode stays empty
+        // For example: "1239?15%BR000"
+        String newBlockData = formatCode(player.challengeCode) + wgChar +
+                              "?" + String(player.boolVal) + "%" +
+                              creatureCode;
+
         Serial.println("[DEBUG] Original Tag: " + userTag.contents);
         Serial.println("[DEBUG] New Tag    : " + newBlockData);
-        tft.fillScreen(TFT_BLACK);
-        tft.setCursor(0, 0);
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println("Original: " + userTag.contents);
-        tft.println("New: " + newBlockData);
 
-        // Use directWriteRFID to write to RFID
+        // Write to RFID
         if (directWriteRFID(mfrc522, key, newBlockData, 1))
         {
-            Serial.println("[DEBUG] Block write success using directWriteRFID!");
+            Serial.println("[DEBUG] Block write success with new code!");
         }
         else
         {
-            Serial.println("[DEBUG] Block write failed using directWriteRFID!");
+            Serial.println("[DEBUG] Block write failed!");
         }
     }
     else
@@ -291,7 +374,10 @@ void loop()
 
     delay(3000);
     tft.fillScreen(TFT_BLACK);
-    Serial.println("=== End Loop, re-starting ===");
+    Serial.println("=== End Loop, rebooting now ===");
+
+    // Reboot the microcontroller
+    esp_restart();
 }
 
 /// Helper to produce a 3-digit string (e.g. "005", "184") for display
@@ -317,6 +403,29 @@ int randomInRangeExclude(int minRange, int maxRange, int excludeVal)
     return val;
 }
 
+String buildQuestionPrompt(int codeValue, int questionNumber)
+{
+    if (codeValue >= 0 && codeValue <= 20)
+    {
+        // questionNumber will be 1, 2, or 3 during your loop
+        int qIndex = questionNumber - 1; // convert to 0..2
+        if (qIndex < 0 || qIndex > 2)
+            qIndex = 0; // safety clamp
+
+        switch (qIndex)
+        {
+        case 0:
+            return questionSheet[codeValue].q1;
+        case 1:
+            return questionSheet[codeValue].q2;
+        case 2:
+            return questionSheet[codeValue].q3;
+        }
+    }
+    // Fallback if out of range
+    return "Question " + String(questionNumber) + ":";
+}
+
 /**
  * Draws a question screen on the TFT:
  *  - Clears display
@@ -328,68 +437,114 @@ int randomInRangeExclude(int minRange, int maxRange, int excludeVal)
  *  param codeValue: the “correct” integer code
  *  param questionNumber: the question number to display
  */
-void quizDisplay(int codeValue, int questionNumber)
+//// filepath: c:\Users\OEM\Documents\GitHub\BS2\src\main2.cpp
+int quizDisplay(int codeValue, int questionNumber)
 {
-    Serial.println("[DEBUG] quizDisplay() called for codeValue=" + String(codeValue) + ", questionNumber=" + String(questionNumber));
+    Serial.println("[DEBUG] quizDisplay() for codeValue=" + String(codeValue) +
+                   ", questionNumber=" + String(questionNumber));
 
-    // 1) Clear screen & show heading
+    // Clear screen & set text
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0, 0);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.println("Question " + String(questionNumber) + " :");
 
-    // 2) Draw horizontal line about 1/5 from top
+    // Display question prompt
+    String questionText = buildQuestionPrompt(codeValue, questionNumber);
+    tft.println(questionText);
+
+    // Horizontal line
     int lineY = tft.height() / 5;
     tft.drawLine(0, lineY, tft.width(), lineY, TFT_WHITE);
 
-    // 3) Prepare four boxes in bottom 4/5
+    // Figure out which quizAnswers value is correct for this questionNumber
+    String correctAnswer;
+    if (codeValue >= 0 && codeValue < 50)
+    {
+        if (questionNumber == 1)
+            correctAnswer = quizAnswers[codeValue].value1;
+        else if (questionNumber == 2)
+            correctAnswer = quizAnswers[codeValue].value2;
+        else
+            correctAnswer = quizAnswers[codeValue].value3;
+    }
+    else
+    {
+        correctAnswer = "0"; // fallback or placeholder
+    }
+
+    // Create array of 4 answers: 1 correct + 3 distractors
+    String answerOptions[4];
+    answerOptions[0] = correctAnswer; // put correct first
+
+    // Get 3 random distractors that are *not* the same as correctAnswer
+    for (int i = 1; i < 4; i++)
+    {
+        String distractor;
+        while (true)
+        {
+            int randIndex = random(0, 50);
+            int randValIndex = random(0, 3);
+
+            if (randValIndex == 0)
+                distractor = quizAnswers[randIndex].value1;
+            else if (randValIndex == 1)
+                distractor = quizAnswers[randIndex].value2;
+            else
+                distractor = quizAnswers[randIndex].value3;
+
+            // Only break out if distractor != correctAnswer
+            if (distractor != correctAnswer)
+                break;
+        }
+        answerOptions[i] = distractor;
+    }
+
+    // Then shuffle the array so the correct answer isn't always at index 0
+    for (int i = 0; i < 4; i++)
+    {
+        int r = random(i, 4);
+        String temp = answerOptions[i];
+        answerOptions[i] = answerOptions[r];
+        answerOptions[r] = temp;
+    }
+
+    // Identify which box holds the correctAnswer
+    int correctBoxIndex = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        if (answerOptions[i] == correctAnswer)
+        {
+            correctBoxIndex = i;
+            break;
+        }
+    }
+
+    // 4 colored boxes: 0=Red, 1=Yellow, 2=Blue, 3=Green
+    const uint16_t boxColors[4] = {TFT_RED, TFT_YELLOW, TFT_BLUE, TFT_GREEN};
+
+    // Layout: 2x2 grid in bottom 4/5 of screen
     int regionH = tft.height() - lineY;
     int regionW = tft.width();
     int boxW = regionW / 2;
     int boxH = regionH / 2;
 
-    // 4) Four colors
-    uint16_t boxColors[4] = {TFT_RED, TFT_YELLOW, TFT_BLUE, TFT_GREEN};
-
-    // 5) Create a range around codeValue for random distractors
-    int minRange, maxRange;
-    if (codeValue < 10)
-    {
-        minRange = 0;
-        maxRange = 9;
-    }
-    else
-    {
-        minRange = (codeValue - 5 < 0) ? 0 : (codeValue - 5);
-        maxRange = codeValue + 5;
-    }
-
-    const int totalBoxes = 4;
-    int codeArray[totalBoxes];
-    codeArray[0] = codeValue; // first entry is correct
-    for (int i = 1; i < totalBoxes; i++)
-    {
-        codeArray[i] = randomInRangeExclude(minRange, maxRange, codeValue);
-        for (int j = 0; j < i; j++)
-        {
-            while (codeArray[i] == codeArray[j])
-            {
-                codeArray[i] = randomInRangeExclude(minRange, maxRange, codeValue);
-            }
-        }
-    }
-
-    // 6) Draw boxes
-    for (int i = 0; i < totalBoxes; i++)
+    // Draw each box with the corresponding answer text
+    // (index 0 => top-left (Red), 1 => top-right (Yellow), etc.)
+    for (int i = 0; i < 4; i++)
     {
         int x = (i % 2) * boxW;
         int y = lineY + (i / 2) * boxH;
         tft.fillRect(x, y, boxW, boxH, boxColors[i]);
         tft.setTextColor(TFT_BLACK, boxColors[i]);
         tft.setCursor(x + 10, y + boxH / 2);
-        tft.print(formatCode(codeArray[i]));
+        tft.print(answerOptions[i]);
     }
-    Serial.println("[DEBUG] quizDisplay() done drawing boxes.");
+
+    // Log which one is correct
+    Serial.println("[DEBUG] correctAnswer=" + correctAnswer +
+                   ", correctBoxIndex=" + String(correctBoxIndex));
+
+    return correctBoxIndex;
 }
 
 /**
