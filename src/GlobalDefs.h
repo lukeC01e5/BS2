@@ -17,4 +17,7 @@ extern MFRC522 mfrc522; // Declare mfrc522 without defining it
 extern MFRC522::MIFARE_Key key;
 extern bool allChallBools;
 
+// Make this an extern declaration only
+extern TFT_eSPI tft;
+
 #endif // GLOBALDEFS_H

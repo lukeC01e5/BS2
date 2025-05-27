@@ -1,0 +1,28 @@
+#include <Arduino.h>
+#include "GlobalDefs.h"
+
+#include "squidy.h"
+#include "orca.h" // Assuming you have an orca.h file similar to squidy.h
+
+
+
+void drawOrca(TFT_eSPI &tft)
+{
+    // Fill the background:
+    tft.fillScreen(TFT_BLACK);
+
+    // Some placeholder text:
+    tft.setCursor(0, 0);
+    //tft.setTextColor(TFT_WHITE, TFT_BLUE);
+    //tft.println("SQUIDY IMAGE PLACEHOLDER");
+
+    tft.setSwapBytes(true);
+
+    // Example: push an image from array data
+    int x = 20;
+    int y = 8;
+    int width = 190;
+    int height = 128;
+    tft.pushImage(x, y, width, height, orca); // If 'squidy' array is defined
+    delay(2000);                                // Show for 2 seconds
+}
