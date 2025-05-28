@@ -279,8 +279,8 @@ void loop()
         {
 
             waterWon(); // Call the function to draw water
-            // Prize won
-                }
+                        // Prize won
+        }
         else if (randomVal <= 27)
         {
             // ID=2 creature
