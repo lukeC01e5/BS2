@@ -2,7 +2,7 @@
 #ifndef ANIMALS_H
 #define ANIMALS_H
 
-//#define ZONE 'water'
+// #define ZONE 'water'
 
 struct AnimalInfo
 {
@@ -26,7 +26,7 @@ static const AnimalInfo ANIMALS[] = {
     {"SQUIDY", 2, "water", "SQ"},
     {"GIANT_SQUID", 8, "water", "GQ"},
     {"KRAKEN", 12, "water", "KR"},
-    {"BABYSHARK", 3, "water", "BS"},
+    {"BABYSHARK", 2, "water", "BS"},
     {"SHARK", 6, "water", "SK"},
     {"MEGALODON", 12, "water", "MG"},
     {"TADPOLE", 2, "forest", "TP"},
@@ -42,7 +42,7 @@ static const AnimalInfo ANIMALS[] = {
     {"T_REX", 10, "normal", "TR"},
     {"BABY_RAY", 3, "water", "BR"},
     {"MEGA_MANTA", 9, "water", "MM"},
-    {"ORCA", 3, "water", "OC"},
+    {"ORCA", 2, "water", "OC"},
     {"BIG_BITEY", 11, "water", "BB"},
     {"FLAME_LILY", 3, "lava", "FL"},
     {"MONSTER_LILY", 10, "lava", "ML"},

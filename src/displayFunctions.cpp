@@ -1,12 +1,12 @@
 //// filepath: c:\Users\OEM\Documents\GitHub\BS2\src\displayFunctions.cpp
-
+#include <Arduino.h> // or <Arduino.h>, <string>, etc. if needed #include <TFT_eSPI.h>
 #include "displayFunctions.h"
 #include <math.h> // for sin, cos
 #include "animals/squidy.h"
 #include "animals/orca.h"
 #include "animals/water.h"
+#include "animals/babyShark.h"
 #include "GlobalDefs.h"
-#include <Arduino.h> // or <Arduino.h>, <string>, etc. if needed #include <TFT_eSPI.h>
 
 void waterWon()
 {
@@ -36,6 +36,14 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.println("ORCA IMAGE PLACEHOLDER");
         drawOrca(tft);
+    }
+    else if (strcmp(creatureName, "BABYSHARK") == 0)
+    {
+        tft.fillScreen(TFT_BLACK);
+        tft.setCursor(0, 0);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.println("ORCA IMAGE PLACEHOLDER");
+        drawBabyShark(tft);
     }
 
     else

@@ -275,7 +275,7 @@ void loop()
         int randomVal = random(0, 31);
         String creatureCode = "";
         String creatureName = "";
-        if (randomVal <= 20)
+        if (randomVal <= 18)
         {
 
             waterWon(); // Call the function to draw water

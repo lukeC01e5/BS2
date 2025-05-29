@@ -1,5 +1,5 @@
 .pio/build/ttgo-lora32-v1/src/displayFunctions.cpp.o: \
- src/displayFunctions.cpp src/displayFunctions.h \
+ src/displayFunctions.cpp \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp_arduino_version.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/freertos/FreeRTOS.h \
@@ -132,7 +132,7 @@
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
- .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/TFT_eSPI.h \
+ src/displayFunctions.h .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/TFT_eSPI.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-spi.h \
@@ -231,6 +231,7 @@
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Button.h \
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Sprite.h \
  src/animals/squidy.h src/animals/orca.h src/animals/water.h \
- src/GlobalDefs.h .pio/libdeps/ttgo-lora32-v1/MFRC522/src/MFRC522.h \
+ src/animals/babyShark.h src/GlobalDefs.h \
+ .pio/libdeps/ttgo-lora32-v1/MFRC522/src/MFRC522.h \
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/require_cpp11.h \
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h src/RFIDData.h
