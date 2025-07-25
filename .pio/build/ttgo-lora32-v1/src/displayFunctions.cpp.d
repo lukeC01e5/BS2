@@ -231,7 +231,7 @@
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Button.h \
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Sprite.h \
  src/animals/squidy.h src/animals/orca.h src/animals/water.h \
- src/animals/babyShark.h src/GlobalDefs.h \
+ src/animals/babyShark.h src/animals/babyRay.h src/GlobalDefs.h \
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/MFRC522.h \
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/require_cpp11.h \
- .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h src/RFIDData.h
+ .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h

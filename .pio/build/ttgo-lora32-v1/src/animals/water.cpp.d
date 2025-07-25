@@ -231,5 +231,4 @@
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Sprite.h \
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/MFRC522.h \
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/require_cpp11.h \
- .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h src/RFIDData.h \
- src/animals/water.h
+ .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h src/animals/water.h

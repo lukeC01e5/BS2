@@ -7,10 +7,9 @@
 
 #include <Arduino.h> // or <Arduino.h>, <string>, etc. if needed #include <TFT_eSPI.h>
 
-void drawAnimalImage(TFT_eSPI &tft, const char *creatureName); 
+void drawAnimalImage(TFT_eSPI &tft, const char *creatureName);
 
 void showMessageCenter(TFT_eSPI &tft, const String &message, uint16_t fgColor, uint16_t bgColor);
-
 
 void showSmileyFace(TFT_eSPI &tft);
 
@@ -18,6 +17,6 @@ void lostLife(TFT_eSPI &tft, int oldLives, int newLives);
 
 void waterWon();
 
-
+void secretZoneMenu();
 
 #endif

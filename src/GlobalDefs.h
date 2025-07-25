@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <MFRC522.h>
-#include "RFIDData.h"
+// #include "RFIDData.h"
 
 // Define current SPI pins
 #define SS_PIN 13   // Slave Select

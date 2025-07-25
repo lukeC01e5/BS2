@@ -22,5 +22,5 @@ void drawWater(TFT_eSPI &tft)
     int width = 190;
     int height = 128;
     tft.pushImage(x, y, width, height, water); // If 'squidy' array is defined
-    delay(2000);                                // Show for 2 seconds
+    delay(1000);                                // Show for 2 seconds
 }

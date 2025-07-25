@@ -6,6 +6,8 @@
 #include "animals/orca.h"
 #include "animals/water.h"
 #include "animals/babyShark.h"
+#include "animals/babyRay.h"
+
 #include "GlobalDefs.h"
 
 void waterWon()
@@ -16,6 +18,7 @@ void waterWon()
     tft.println("\n Prize won");
     tft.setTextColor(TFT_BLUE, TFT_BLACK); // Blue text for "WATER!"
     tft.println(" WATER!");
+    delay(2000); // Give the user 2 seconds to see the message
     drawWater(tft);
 }
 
@@ -42,7 +45,15 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println("ORCA IMAGE PLACEHOLDER");
+        tft.println("BABYSHARK IMAGE PLACEHOLDER");
+        drawBabyShark(tft);
+    }
+    else if (strcmp(creatureName, "BABYRAY") == 0)
+    {
+        tft.fillScreen(TFT_BLACK);
+        tft.setCursor(0, 0);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.println("ORCA BABYRAY PLACEHOLDER");
         drawBabyShark(tft);
     }
 
@@ -203,3 +214,5 @@ void lostLife(TFT_eSPI &tft, int wrongGuesses)
     }
     delay(2000); // Show for 2 seconds
 }
+
+
