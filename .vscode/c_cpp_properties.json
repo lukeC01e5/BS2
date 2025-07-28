@@ -10,6 +10,7 @@
             "includePath": [
                 "c:/Users/OEM/Documents/GitHub/BS2/include",
                 "c:/Users/OEM/Documents/GitHub/BS2/src",
+                "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
                 "c:/Users/OEM/Documents/GitHub/BS2/.pio/libdeps/ttgo-lora32-v1/Keypad/src",
                 "c:/Users/OEM/Documents/GitHub/BS2/.pio/libdeps/ttgo-lora32-v1/ArduinoHttpClient/src",
                 "c:/Users/OEM/Documents/GitHub/BS2/.pio/libdeps/ttgo-lora32-v1/MFRC522/src",
@@ -231,7 +232,6 @@
                 "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src",
                 "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/Insights/src",
                 "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/NetBIOS/src",
-                "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
                 "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/RainMaker/src",
                 "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/SD/src",
                 "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/SD_MMC/src",
@@ -250,6 +250,7 @@
                 "path": [
                     "c:/Users/OEM/Documents/GitHub/BS2/include",
                     "c:/Users/OEM/Documents/GitHub/BS2/src",
+                    "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
                     "c:/Users/OEM/Documents/GitHub/BS2/.pio/libdeps/ttgo-lora32-v1/Keypad/src",
                     "c:/Users/OEM/Documents/GitHub/BS2/.pio/libdeps/ttgo-lora32-v1/ArduinoHttpClient/src",
                     "c:/Users/OEM/Documents/GitHub/BS2/.pio/libdeps/ttgo-lora32-v1/MFRC522/src",
@@ -471,7 +472,6 @@
                     "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/I2S/src",
                     "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/Insights/src",
                     "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/NetBIOS/src",
-                    "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
                     "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/RainMaker/src",
                     "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/SD/src",
                     "C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/SD_MMC/src",

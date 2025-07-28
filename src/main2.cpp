@@ -47,6 +47,11 @@ struct Player
     int wrongGuesses;
     int boolVal;
     String playerName;
+    // create four bool values water, lava, forest, city
+    bool waterZone = false;
+    bool lavaZone = false;
+    bool forestZone = false;
+    bool cityZone = false;
 };
 
 int quizDisplay(int codeValue, int questionNumber);
@@ -55,6 +60,9 @@ int randomInRangeExclude(int minRange, int maxRange, int excludeVal);
 bool directWriteRFID(MFRC522 &rfid, MFRC522::MIFARE_Key &key, const String &data, byte blockNumber);
 void secretZoneMenu();
 void lostLife(TFT_eSPI &tft, int wrongGuesses);
+// void updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char *currentZone);
+bool updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char *currentZone);
+int countCompletedZones(const Player &player);
 
 // A simple function to simulate adding 5 coin to a remote DB
 bool postToDBAdd5Coin()
@@ -128,20 +136,16 @@ void setup()
 
 void loop()
 {
-    ////////////////////////////////////////////////
-    // Check for secret combo: buttons 1 and 4 pressed together
-    // Check for long press on button 1 (3 seconds)
 
-    // Check for secret menu: button 1 pressed
-
-    ////////////////////////////////////
-
-    // Create a UserTag object
     UserTag userTag;
+    // centre message near top
 
-    // Prompt for RFID
     tft.fillScreen(TFT_BLACK);
-    tft.println("\n Insert Key");
+    tft.setCursor(tft.width() / 4, tft.height() / 4);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.println(" Insert\n  Key");
+    // Prompt for RFID
+
     while (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial())
     {
         char k = keypad.getKey();
@@ -188,6 +192,8 @@ void loop()
     }
     userTag.contents = block1Data;
 
+    Serial.println("[DEBUG] RFID Tag Read: " + userTag.contents);
+
     // Parse into Player struct
     Player player;
     if (block1Data.length() < 7)
@@ -209,6 +215,15 @@ void loop()
             player.boolVal = block1Data.substring(qIndex + 1, qIndex + 2).toInt();
             // Loot codes are after %
             player.playerName = block1Data.substring(pIndex + 1, pIndex + 9); // 8 chars
+            String lootCodes = block1Data.substring(pIndex + 1);              // Extract loot codes after '%'
+            if (updateZoneBoolsFromLoot(player, lootCodes, ZONE))
+            {
+                // Zone already completed, so exit loop and do not proceed to questions
+                mfrc522.PICC_HaltA();
+                mfrc522.PCD_StopCrypto1();
+                Serial.println("[DEBUG] Zone already completed, exiting loop.");
+                return;
+            }
         }
     }
 
@@ -219,9 +234,10 @@ void loop()
         tft.setCursor(tft.width() / 4, tft.height() / 2); // Center the text roughly
         tft.setTextColor(TFT_RED, TFT_BLACK);
         tft.setCursor(0, 0);
-        tft.println("\n No lives\n left");
+        tft.println("\n No lives\n ");
+        tft.println(" Return Home");
 
-        delay(3000);   // Wait for 3 seconds before restarting
+        delay(9000);   // Wait for 3 seconds before restarting
         esp_restart(); // Restart the program
     }
 
@@ -241,24 +257,24 @@ void loop()
         }
         codeArea = userTag.contents.substring(codeStart, codeEnd);
     }
-
-    // 2. Check if there is space (let's say max 7 codes, 2 chars each = 14 chars)
-    const int MAX_CODES = 4; // 4 codes, 2 chars each = 8 chars
-    if (codeArea.length() >= MAX_CODES * 2)
-    {
-        tft.fillScreen(TFT_RED);
-        tft.setCursor(0, 0);
-        tft.setTextColor(TFT_WHITE, TFT_RED);
-        tft.println("All slots full!");
-        tft.println("Tag:");
-        tft.println(userTag.contents);
-        Serial.println("[ERROR] All slots full! Tag: " + userTag.contents);
-        delay(4000);
-        mfrc522.PICC_HaltA();
-        mfrc522.PCD_StopCrypto1();
-        return;
-    }
-
+    /*
+        // 2. Check if there is space (let's say max 7 codes, 2 chars each = 14 chars)
+        const int MAX_CODES = 4; // 4 codes, 2 chars each = 8 chars
+        if (codeArea.length() >= MAX_CODES * 2)
+        {
+            tft.fillScreen(TFT_RED);
+            tft.setCursor(0, 0);
+            tft.setTextColor(TFT_WHITE, TFT_RED);
+            tft.println("All slots full!");
+            tft.println("Tag:");
+            tft.println(userTag.contents);
+            Serial.println("[ERROR] All slots full! Tag: " + userTag.contents);
+            delay(4000);
+            mfrc522.PICC_HaltA();
+            mfrc522.PCD_StopCrypto1();
+            return;
+        }
+    */
     // Gather answers for each question
     String val1, val2, val3;
     if (player.challengeCode >= 0 && player.challengeCode < 50)
@@ -342,18 +358,31 @@ void loop()
     bool postWorked = postToDBAdd5Coin();
     if (postWorked)
     {
-        // Mark player.boolVal=15 as “task done”
-        player.boolVal = 15;
+        Serial.println("[DEBUG] Entered RFID write block");
+        // Count completed zones BEFORE awarding the new loot
+        int completedZones = 0;
+        if (player.waterZone)
+            completedZones++;
+        if (player.lavaZone)
+            completedZones++;
+        if (player.forestZone)
+            completedZones++;
+        if (player.cityZone)
+            completedZones++;
 
-        // Possibly add a random creature
-        int randomVal = random(0, 31);
+        // --- Resource win block ---
+        int randomVal = random(1, 31); // 1 to 30 inclusive
+
+        String resourceCode = "";
+        String resourceName = "";
         String creatureCode = "";
         String creatureName = "";
+        int creatureId = 0;
+
+        // Decide prize
         if (randomVal <= 18)
         {
-            String resourceCode = "";
-            String resourceName = "";
-
+            // Resource win
             if (strcmp(ZONE, "water") == 0)
             {
                 resourceCode = "WA";
@@ -374,59 +403,47 @@ void loop()
                 resourceCode = "CI";
                 resourceName = "City";
             }
-
-            if (resourceCode != "")
-            {
-                // Show resource win on TFT
-                tft.fillScreen(TFT_BLUE);
-                tft.setCursor(0, 0);
-                tft.setTextColor(TFT_WHITE, TFT_BLUE);
-                tft.println(" Resource\n Won:\n " + resourceName);
-                delay(2000);
-
-                // 1. Extract existing codes after '%'
-                String existingCodes = "";
-                int percentIdx = userTag.contents.indexOf('%');
-                if (percentIdx != -1 && userTag.contents.length() > percentIdx + 1)
-                {
-                    int codeStart = percentIdx + 1;
-                    int codeEnd = codeStart;
-                    while (codeEnd < userTag.contents.length() && isAlpha(userTag.contents.charAt(codeEnd)))
-                    {
-                        codeEnd++;
-                    }
-                    existingCodes = userTag.contents.substring(codeStart, codeEnd);
-                }
-
-                // 2. Append new resource code if not already present
-                if (existingCodes.indexOf(resourceCode) == -1)
-                {
-                    existingCodes += resourceCode;
-                }
-
-                // 3. Build the new RFID data string
-                char wgChar = (player.wrongGuesses >= 0 && player.wrongGuesses <= 9) ? ('0' + player.wrongGuesses) : '0';
-                String newBlockData = formatCode(player.challengeCode) + wgChar +
-                                      "?" + String(player.boolVal) + "%" + existingCodes;
-
-                // Pad with zeros if necessary
-                while (newBlockData.length() < 16)
-                    newBlockData += "0";
-
-                Serial.println("[DEBUG] Original Tag: " + userTag.contents);
-                Serial.println("[DEBUG] New Tag    : " + newBlockData);
-
-                // Write to RFID block 1
-                if (directWriteRFID(mfrc522, key, newBlockData, 1))
-                    Serial.println("[DEBUG] Block write success with new resource code!");
-                else
-                    Serial.println("[DEBUG] Block write failed!");
-            }
+        }
+        else if (randomVal <= 26)
+        {
+            // Creature with id 2 or less
+            creatureId = 2;
         }
         else
         {
-            // ID=2 creature
-            AnimalInfo chosen = pickRandomCreature(2, ZONE);
+            // Creature with id 3
+            creatureId = 3;
+        }
+
+        // 1. Extract existing codes after '%'
+        String existingCodes = "";
+        int percentIdx = userTag.contents.indexOf('%');
+        if (percentIdx != -1 && userTag.contents.length() > percentIdx + 1)
+        {
+            int codeStart = percentIdx + 1;
+            int codeEnd = codeStart;
+            while (codeEnd < userTag.contents.length() && isAlpha(userTag.contents.charAt(codeEnd)))
+            {
+                codeEnd++;
+            }
+            existingCodes = userTag.contents.substring(codeStart, codeEnd);
+        }
+
+        if (resourceCode != "")
+        {
+            // Show resource win on TFT
+            tft.fillScreen(TFT_BLUE);
+            tft.setCursor(0, 0);
+            tft.setTextColor(TFT_WHITE, TFT_BLUE);
+            tft.println(" Resource\n Won:\n " + resourceName);
+            delay(2000);
+
+            if (existingCodes.indexOf(resourceCode) == -1)
+                existingCodes += resourceCode;
+        }
+        else if (creatureId > 0)
+        {
+            AnimalInfo chosen = pickRandomCreature(creatureId, ZONE);
             creatureCode = chosen.code;
             creatureName = chosen.name;
 
@@ -434,56 +451,44 @@ void loop()
             tft.setCursor(0, 0);
             tft.setTextColor(TFT_BLACK, TFT_GREEN);
             tft.println(" Creature\n Won:\n " + creatureName);
-            delay(2000); // give the user 2 seconds to see the name
+            delay(2000);
 
             drawAnimalImage(tft, creatureName.c_str());
 
-            // --- Add RFID update for creature code ---
-            // 1. Extract existing codes after '%'
-            String existingCodes = "";
-            int percentIdx = userTag.contents.indexOf('%');
-            if (percentIdx != -1 && userTag.contents.length() > percentIdx + 1)
-            {
-                int codeStart = percentIdx + 1;
-                int codeEnd = codeStart;
-                while (codeEnd < userTag.contents.length() && isAlpha(userTag.contents.charAt(codeEnd)))
-                {
-                    codeEnd++;
-                }
-                existingCodes = userTag.contents.substring(codeStart, codeEnd);
-            }
-
-            Serial.println("[DEBUG] Existing codes before creature: " + existingCodes);
-
-            // 2. Append new creature code if not already present
             if (existingCodes.indexOf(creatureCode) == -1)
-            {
                 existingCodes += creatureCode;
-                Serial.println("[DEBUG] Appending creature code: " + creatureCode);
-            }
-            else
-            {
-                Serial.println("[DEBUG] Creature code already present: " + creatureCode);
-            }
-
-            // 3. Build the new RFID data string
-            char wgChar = (player.wrongGuesses >= 0 && player.wrongGuesses <= 9) ? ('0' + player.wrongGuesses) : '0';
-            String newBlockData = formatCode(player.challengeCode) + wgChar +
-                                  "?" + String(player.boolVal) + "%" + existingCodes;
-
-            // Pad with zeros if necessary
-            while (newBlockData.length() < 16)
-                newBlockData += "0";
-
-            Serial.println("[DEBUG] Original Tag: " + userTag.contents);
-            Serial.println("[DEBUG] New Tag    : " + newBlockData);
-
-            // Write to RFID block 1
-            if (directWriteRFID(mfrc522, key, newBlockData, 1))
-                Serial.println("[DEBUG] Block write success with new creature code!");
-            else
-                Serial.println("[DEBUG] Block write failed!");
         }
+
+        // --- Update zone bools with the new code ---
+        String newLootCodes = existingCodes;
+        Player tempPlayer = player;
+        updateZoneBoolsFromLoot(tempPlayer, newLootCodes, ZONE);
+
+        // Count zones after awarding this loot
+        int completedZonesAfter = countCompletedZones(tempPlayer);
+
+        // Set boolVal to 4 if all zones complete, else to number of completed zones
+        player.boolVal = (completedZonesAfter == 4) ? 4 : completedZonesAfter;
+
+        // Pad to 8 chars
+        while (existingCodes.length() < 8)
+            existingCodes += "0";
+
+        // Build the new RFID data string
+        char wgChar = (player.wrongGuesses >= 0 && player.wrongGuesses <= 9) ? ('0' + player.wrongGuesses) : '0';
+        String newBlockData = formatCode(player.challengeCode) + wgChar +
+                              "?" + String(player.boolVal) + "%" + existingCodes;
+
+        // Debug print
+        Serial.println("[DEBUG] Writing to RFID: " + newBlockData);
+
+        // Write to RFID
+        if (directWriteRFID(mfrc522, key, newBlockData, 1))
+            Serial.println("[DEBUG] Block write success!");
+        else
+            Serial.println("[DEBUG] Block write failed!");
+
+        delay(1000); // <-- Give time for write to complete
     }
     else
     {
@@ -718,4 +723,95 @@ void secretZoneMenu()
         }
         delay(50);
     }
+}
+
+bool updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char *currentZone)
+{
+    // Reset all zone bools
+    player.waterZone = false;
+    player.lavaZone = false;
+    player.forestZone = false;
+    player.cityZone = false;
+
+    // Check for resource codes
+    if (lootCodes.indexOf("WA") != -1)
+        player.waterZone = true;
+    if (lootCodes.indexOf("LA") != -1)
+        player.lavaZone = true;
+    if (lootCodes.indexOf("FO") != -1)
+        player.forestZone = true;
+    if (lootCodes.indexOf("CI") != -1)
+        player.cityZone = true;
+
+    // Scan for animal codes
+    const int animalCount = sizeof(ANIMALS) / sizeof(ANIMALS[0]);
+    for (int i = 0; i < animalCount; i++)
+    {
+        String code = ANIMALS[i].code;
+        String env = ANIMALS[i].environment;
+        if (lootCodes.indexOf(code) != -1)
+        {
+            if (env == String("water"))
+                player.waterZone = true;
+            else if (env == String("lava"))
+                player.lavaZone = true;
+            else if (env == String("forest"))
+                player.forestZone = true;
+            else if (env == String("city"))
+                player.cityZone = true;
+        }
+    }
+
+    // If all zones are complete, display special message
+    if (player.waterZone && player.lavaZone && player.forestZone && player.cityZone)
+    {
+        tft.fillScreen(TFT_GREEN);
+        tft.setCursor(0, 0);
+        tft.setTextColor(TFT_BLACK, TFT_GREEN);
+        tft.println("All zones");
+        tft.println("complete!");
+        tft.println("Return Home");
+        delay(5000);
+        esp_restart(); // <--- Add this line
+        // return;
+    }
+
+    // If current zone is already completed, display message
+    bool alreadyCompleted = false;
+    if (String(currentZone) == "water" && player.waterZone)
+        alreadyCompleted = true;
+    else if (String(currentZone) == "lava" && player.lavaZone)
+        alreadyCompleted = true;
+    else if (String(currentZone) == "forest" && player.forestZone)
+        alreadyCompleted = true;
+    else if (String(currentZone) == "city" && player.cityZone)
+        alreadyCompleted = true;
+
+    if (alreadyCompleted)
+    {
+        tft.fillScreen(TFT_BLUE);
+        tft.setCursor(0, 0);
+        tft.setTextColor(TFT_WHITE, TFT_BLUE);
+        tft.println(currentZone);
+        tft.println(" zone\n completed");
+        /// tft.println("already!");
+        delay(3000);
+        // esp_restart(); // <--- Add this line
+        return true;
+    }
+    return false;
+}
+
+int countCompletedZones(const Player &player)
+{
+    int count = 0;
+    if (player.waterZone)
+        count++;
+    if (player.lavaZone)
+        count++;
+    if (player.forestZone)
+        count++;
+    if (player.cityZone)
+        count++;
+    return count;
 }
