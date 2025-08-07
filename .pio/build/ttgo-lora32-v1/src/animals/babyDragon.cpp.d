@@ -1,4 +1,5 @@
-.pio/build/ttgo-lora32-v1/src/animals/water.cpp.o: src/animals/water.cpp \
+.pio/build/ttgo-lora32-v1/src/animals/babyDragon.cpp.o: \
+ src/animals/babyDragon.cpp \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp_arduino_version.h \
  C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/freertos/FreeRTOS.h \
@@ -231,4 +232,5 @@
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Sprite.h \
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/MFRC522.h \
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/require_cpp11.h \
- .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h src/animals/water.h
+ .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h \
+ src/animals/babyDragon.h

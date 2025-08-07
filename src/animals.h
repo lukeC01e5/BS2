@@ -13,7 +13,6 @@ struct AnimalInfo
 };
 
 static const AnimalInfo ANIMALS[] = {
-    {"NO_CREATURE", 1, "city", "NC"},
     {"FLAMINGO", 3, "lava", "FI"},
     {"FLAME_KINGO", 6, "lava", "FK"},
     {"KITTEN", 2, "city", "KT"},

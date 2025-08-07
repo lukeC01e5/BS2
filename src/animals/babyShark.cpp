@@ -7,12 +7,7 @@ void drawBabyShark(TFT_eSPI &tft)
 {
     // Fill the background:
     tft.fillScreen(TFT_BLACK);
-
-    // Some placeholder text:
     tft.setCursor(0, 0);
-    // tft.setTextColor(TFT_WHITE, TFT_BLUE);
-    // tft.println("SQUIDY IMAGE PLACEHOLDER");
-
     tft.setSwapBytes(true);
 
     // Example: push an image from array data

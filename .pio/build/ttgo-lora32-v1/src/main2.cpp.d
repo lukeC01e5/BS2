@@ -235,4 +235,6 @@
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/require_cpp11.h \
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h src/quizAnswers.h \
  src/quizQuestions.h src/animals.h src/displayFunctions.h \
- C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src/Preferences.h
+ C:/Users/OEM/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src/Preferences.h \
+ src/resources/wood.h src/resources/scrapMetal.h src/resources/water.h \
+ src/resources/lava.h

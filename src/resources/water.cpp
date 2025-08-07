@@ -10,10 +10,7 @@ void drawWater(TFT_eSPI &tft)
 {
     // Fill the background:
     tft.fillScreen(TFT_BLACK);
-
-    // Some placeholder text:
     tft.setCursor(0, 0);
-
     tft.setSwapBytes(true);
 
     // Example: push an image from array data

@@ -230,8 +230,12 @@
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Smooth_font.h \
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Button.h \
  .pio/libdeps/ttgo-lora32-v1/TFT_eSPI/Extensions/Sprite.h \
- src/animals/squidy.h src/animals/orca.h src/animals/water.h \
- src/animals/babyShark.h src/animals/babyRay.h src/GlobalDefs.h \
- .pio/libdeps/ttgo-lora32-v1/MFRC522/src/MFRC522.h \
+ src/GlobalDefs.h .pio/libdeps/ttgo-lora32-v1/MFRC522/src/MFRC522.h \
  .pio/libdeps/ttgo-lora32-v1/MFRC522/src/require_cpp11.h \
- .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h
+ .pio/libdeps/ttgo-lora32-v1/MFRC522/src/deprecated.h \
+ src/animals/squidy.h src/animals/orca.h src/animals/babyShark.h \
+ src/animals/babyRay.h src/animals/kitten.h src/animals/puppy.h \
+ src/animals/babyTrex.h src/animals/flamingo.h src/animals/flameLily.h \
+ src/animals/babyDragon.h src/animals/babyUnicorn.h src/animals/bearCub.h \
+ src/animals/babyBird.h src/resources/lava.h src/resources/wood.h \
+ src/resources/scrapMetal.h src/resources/water.h

@@ -9,9 +9,6 @@
 
 #include <TFT_eSPI.h>
 
-//static const int SQUIDY_WIDTH = 190;
-//static const int SQUIDY_HEIGHT = 128;
-
 void drawOrca(TFT_eSPI &tft);
 
 
@@ -22,6 +19,7 @@ void drawOrca(TFT_eSPI &tft);
 #elif defined(__arm__)
     #define PROGMEM
 #endif
+
 
 const unsigned short orca[24320] PROGMEM={
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,   // 0x0010 (16) pixels

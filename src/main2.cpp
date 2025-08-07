@@ -8,6 +8,19 @@
 #include <esp_system.h> // For esp_restart
 #include "displayFunctions.h"
 #include <Preferences.h>
+#include "resources/wood.h"
+#include "resources/scrapMetal.h"
+#include "resources/water.h"
+#include "resources/lava.h"
+
+// Define TFT_GRAY if not provided by the library
+#define TFT_GRAY 0x8410 // RGB565 value for gray
+
+// **PRIZE RATIO CONFIGURATION**
+const int RESOURCE_WIN_CHANCE = 10; // Out of 30 (60% chance)
+const int CREATURE_LOW_CHANCE = 15; // Out of 30 (26.7% chance) - creatures with id 2 or less
+const int CREATURE_HIGH_CHANCE = 5; // Out of 30 (13.3% chance) - creatures with id 3
+const int TOTAL_RANDOM_RANGE = 30;  // Total range for random selection
 
 Preferences preferences;
 
@@ -16,10 +29,6 @@ Preferences preferences;
 const char *ZONE_LIST[] = {"water", "lava", "forest", "city"};
 const int ZONE_COUNT = 4;
 int currentZoneIndex = 0;
-
-// #define ZONE "water"
-
-// #pragma once
 
 // Keypad configuration (4x1 keypad)
 const byte ROWS = 4;
@@ -47,7 +56,6 @@ struct Player
     int wrongGuesses;
     int boolVal;
     String playerName;
-    // create four bool values water, lava, forest, city
     bool waterZone = false;
     bool lavaZone = false;
     bool forestZone = false;
@@ -60,35 +68,10 @@ int randomInRangeExclude(int minRange, int maxRange, int excludeVal);
 bool directWriteRFID(MFRC522 &rfid, MFRC522::MIFARE_Key &key, const String &data, byte blockNumber);
 void secretZoneMenu();
 void lostLife(TFT_eSPI &tft, int wrongGuesses);
-// void updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char *currentZone);
 bool updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char *currentZone);
 int countCompletedZones(const Player &player);
-
-// A simple function to simulate adding 5 coin to a remote DB
-bool postToDBAdd5Coin()
-{
-    Serial.println("[DEBUG] Simulating postToDBAdd5Coin...");
-    return true; // For now, just pretend it always succeeds
-}
-
-// Return a random creature from ANIMALS[] that matches ID & zone
-AnimalInfo pickRandomCreature(int desiredId, const char *zone)
-{
-    const int animalCount = sizeof(ANIMALS) / sizeof(ANIMALS[0]);
-    AnimalInfo candidates[animalCount];
-    int count = 0;
-    for (int i = 0; i < animalCount; i++)
-    {
-        if (ANIMALS[i].id == desiredId && strcmp(ANIMALS[i].environment, zone) == 0)
-        {
-            candidates[count++] = ANIMALS[i];
-        }
-    }
-    if (count == 0)
-        return {"NO_CREATURE", 1, "normal", "NC"};
-    int index = random(0, count);
-    return candidates[index];
-}
+bool postToDBAdd5Coin();
+AnimalInfo pickRandomCreature(int desiredId, const char *zone);
 
 void setup()
 {
@@ -104,8 +87,6 @@ void setup()
 
     SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, SS_PIN);
 
-    //////////////////////////////////////////////////
-
     preferences.begin("game", false);
     String savedZone = preferences.getString("zone", "water");
     for (int i = 0; i < ZONE_COUNT; i++)
@@ -118,8 +99,6 @@ void setup()
     }
 #define ZONE ZONE_LIST[currentZoneIndex]
     Serial.println("[DEBUG] Loaded ZONE: " + String(ZONE));
-
-    //////////////////////////////////////////////
 
     // Set factory key bytes to 0xFF
     for (int i = 0; i < 6; i++)
@@ -257,24 +236,6 @@ void loop()
         }
         codeArea = userTag.contents.substring(codeStart, codeEnd);
     }
-    /*
-        // 2. Check if there is space (let's say max 7 codes, 2 chars each = 14 chars)
-        const int MAX_CODES = 4; // 4 codes, 2 chars each = 8 chars
-        if (codeArea.length() >= MAX_CODES * 2)
-        {
-            tft.fillScreen(TFT_RED);
-            tft.setCursor(0, 0);
-            tft.setTextColor(TFT_WHITE, TFT_RED);
-            tft.println("All slots full!");
-            tft.println("Tag:");
-            tft.println(userTag.contents);
-            Serial.println("[ERROR] All slots full! Tag: " + userTag.contents);
-            delay(4000);
-            mfrc522.PICC_HaltA();
-            mfrc522.PCD_StopCrypto1();
-            return;
-        }
-    */
     // Gather answers for each question
     String val1, val2, val3;
     if (player.challengeCode >= 0 && player.challengeCode < 50)
@@ -371,7 +332,7 @@ void loop()
             completedZones++;
 
         // --- Resource win block ---
-        int randomVal = random(1, 31); // 1 to 30 inclusive
+        int randomVal = random(1, TOTAL_RANDOM_RANGE + 1); // 1 to 30 inclusive
 
         String resourceCode = "";
         String resourceName = "";
@@ -379,8 +340,8 @@ void loop()
         String creatureName = "";
         int creatureId = 0;
 
-        // Decide prize
-        if (randomVal <= 18)
+        // Decide prize based on configurable ratios
+        if (randomVal <= RESOURCE_WIN_CHANCE)
         {
             // Resource win
             if (strcmp(ZONE, "water") == 0)
@@ -404,7 +365,7 @@ void loop()
                 resourceName = "City";
             }
         }
-        else if (randomVal <= 26)
+        else if (randomVal <= RESOURCE_WIN_CHANCE + CREATURE_LOW_CHANCE)
         {
             // Creature with id 2 or less
             creatureId = 2;
@@ -429,17 +390,18 @@ void loop()
             existingCodes = userTag.contents.substring(codeStart, codeEnd);
         }
 
+        // 2. Determine what was won and update existingCodes
         if (resourceCode != "")
         {
-            // Show resource win on TFT
-            tft.fillScreen(TFT_BLUE);
-            tft.setCursor(0, 0);
-            tft.setTextColor(TFT_WHITE, TFT_BLUE);
-            tft.println(" Resource\n Won:\n " + resourceName);
-            delay(2000);
-
+            // Add resource code to existingCodes
             if (existingCodes.indexOf(resourceCode) == -1)
-                existingCodes += resourceCode;
+            {
+                int zeroIdx = existingCodes.indexOf('0');
+                if (zeroIdx != -1)
+                    existingCodes.setCharAt(zeroIdx, resourceCode.charAt(0));
+                else
+                    existingCodes += resourceCode;
+            }
         }
         else if (creatureId > 0)
         {
@@ -447,22 +409,23 @@ void loop()
             creatureCode = chosen.code;
             creatureName = chosen.name;
 
-            tft.fillScreen(TFT_GREEN);
-            tft.setCursor(0, 0);
-            tft.setTextColor(TFT_BLACK, TFT_GREEN);
-            tft.println(" Creature\n Won:\n " + creatureName);
-            delay(2000);
-
-            drawAnimalImage(tft, creatureName.c_str());
-
             if (existingCodes.indexOf(creatureCode) == -1)
-                existingCodes += creatureCode;
+            {
+                int zeroIdx = existingCodes.indexOf('0');
+                if (zeroIdx != -1)
+                    existingCodes.setCharAt(zeroIdx, creatureCode.charAt(0));
+                else
+                    existingCodes += creatureCode;
+            }
         }
 
+        // Pad to 8 chars
+        while (existingCodes.length() < 8)
+            existingCodes += "0";
+
         // --- Update zone bools with the new code ---
-        String newLootCodes = existingCodes;
         Player tempPlayer = player;
-        updateZoneBoolsFromLoot(tempPlayer, newLootCodes, ZONE);
+        updateZoneBoolsFromLoot(tempPlayer, existingCodes, ZONE);
 
         // Count zones after awarding this loot
         int completedZonesAfter = countCompletedZones(tempPlayer);
@@ -470,25 +433,62 @@ void loop()
         // Set boolVal to 4 if all zones complete, else to number of completed zones
         player.boolVal = (completedZonesAfter == 4) ? 4 : completedZonesAfter;
 
-        // Pad to 8 chars
-        while (existingCodes.length() < 8)
-            existingCodes += "0";
-
-        // Build the new RFID data string
+        // 3. WRITE TO RFID FIRST (before displaying images)
         char wgChar = (player.wrongGuesses >= 0 && player.wrongGuesses <= 9) ? ('0' + player.wrongGuesses) : '0';
         String newBlockData = formatCode(player.challengeCode) + wgChar +
                               "?" + String(player.boolVal) + "%" + existingCodes;
 
-        // Debug print
         Serial.println("[DEBUG] Writing to RFID: " + newBlockData);
 
-        // Write to RFID
         if (directWriteRFID(mfrc522, key, newBlockData, 1))
+        {
             Serial.println("[DEBUG] Block write success!");
-        else
-            Serial.println("[DEBUG] Block write failed!");
 
-        delay(1000); // <-- Give time for write to complete
+            // 4. NOW display what was won (after successful RFID write)
+            if (resourceCode != "")
+            {
+                uint16_t bgColor = TFT_BLUE; // Default to water
+                if (strcmp(ZONE, "lava") == 0)
+                    bgColor = TFT_RED;
+                else if (strcmp(ZONE, "forest") == 0)
+                    bgColor = TFT_GREEN;
+                else if (strcmp(ZONE, "city") == 0)
+                    bgColor = TFT_GRAY;
+
+                tft.fillScreen(bgColor);
+                tft.setCursor(0, 0);
+                tft.setTextColor(TFT_WHITE, bgColor);
+                tft.println(" Resource\n Won:\n " + resourceName);
+                delay(2000);
+
+                // Show the resource image!
+                if (resourceCode == "WA")
+                    drawWater(tft);
+                else if (resourceCode == "LA")
+                    drawLava(tft);
+                else if (resourceCode == "FO")
+                    drawWood(tft);
+                else if (resourceCode == "CI")
+                    drawScrapMetal(tft);
+            }
+            else if (creatureId > 0)
+            {
+                tft.fillScreen(TFT_GREEN);
+                tft.setCursor(0, 0);
+                tft.setTextColor(TFT_BLACK, TFT_GREEN);
+                tft.println(" Creature\n Won:\n " + creatureName);
+                delay(2000);
+
+                drawAnimalImage(tft, creatureName.c_str());
+            }
+        }
+        else
+        {
+            Serial.println("[DEBUG] Block write failed!");
+            // Could display an error message here
+        }
+
+        delay(1000); // Give time for display
     }
     else
     {
@@ -772,8 +772,8 @@ bool updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char
         tft.println("complete!");
         tft.println("Return Home");
         delay(5000);
-        esp_restart(); // <--- Add this line
-        // return;
+        // esp_restart(); // <--- Add this line
+        //  return;
     }
 
     // If current zone is already completed, display message
@@ -814,4 +814,29 @@ int countCompletedZones(const Player &player)
     if (player.cityZone)
         count++;
     return count;
+}
+
+bool postToDBAdd5Coin()
+{
+    Serial.println("[DEBUG] Simulating postToDBAdd5Coin...");
+    return true; // For now, just pretend it always succeeds
+}
+
+// Return a random creature from ANIMALS[] that matches ID & zone
+AnimalInfo pickRandomCreature(int desiredId, const char *zone)
+{
+    const int animalCount = sizeof(ANIMALS) / sizeof(ANIMALS[0]);
+    AnimalInfo candidates[animalCount];
+    int count = 0;
+    for (int i = 0; i < animalCount; i++)
+    {
+        if (ANIMALS[i].id == desiredId && strcmp(ANIMALS[i].environment, zone) == 0)
+        {
+            candidates[count++] = ANIMALS[i];
+        }
+    }
+    if (count == 0)
+        return {"NO_CREATURE", 1, "normal", "NC"};
+    int index = random(0, count);
+    return candidates[index];
 }

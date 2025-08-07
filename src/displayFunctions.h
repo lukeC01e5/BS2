@@ -19,4 +19,6 @@ void waterWon();
 
 void secretZoneMenu();
 
+void handleZoneResource(TFT_eSPI &tft, const char *ZONE);
+
 #endif

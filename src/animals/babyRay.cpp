@@ -3,7 +3,7 @@
 
 #include "babyRay.h"
 
-void drawRayShark(TFT_eSPI &tft)
+void drawBabyRay(TFT_eSPI &tft)
 {
     // Fill the background:
     tft.fillScreen(TFT_BLACK);
