@@ -741,6 +741,7 @@ bool updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char
     {
         tft.fillScreen(TFT_GREEN);
         tft.setCursor(0, 0);
+        tft.setTextSize(3);
         tft.setTextColor(TFT_BLACK, TFT_GREEN);
         tft.println("All zones");
         tft.println("complete!");
