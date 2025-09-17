@@ -21,10 +21,16 @@
 #include "animals/bearCub.h"
 #include "animals/babyBird.h"
 
-#include "resources/lava.h"
 #include "resources/wood.h"
 #include "resources/scrapMetal.h"
-#include "resources/water.h"
+#include "resources/water.h" // Unchanged
+#include "resources/lava.h"  // Unchanged
+
+#include "messages/key.h"
+#include "messages/waterComplete.h"
+#include "messages/lavaComplete.h"
+#include "messages/cityComplete.h"
+#include "messages/forestComplete.h" // Note: you have both forestComplete.h and forrestComplete.cpp
 
 // Define a gray color constant if not provided by TFT_eSPI
 #ifndef TFT_GRAY
@@ -188,33 +194,34 @@ void showMessageCenter(TFT_eSPI &tft, const String &message, uint16_t fgColor, u
 
 void showSmileyFace(TFT_eSPI &tft)
 {
+    tft.setRotation(1); // ADD THIS - 240x135
     tft.fillScreen(TFT_BLACK);
 
-    // Face center and radius - moved to 1/3 position
-    int16_t centerX = tft.width() / 2;
-    int16_t centerY = tft.height() / 3; // Changed from tft.height() / 2
-    int16_t faceRadius = min(tft.width(), tft.height()) / 4;
+    // Smaller smiley for small screen
+    int16_t centerX = 120;   // CHANGE - Center of 240px width
+    int16_t centerY = 45;    // CHANGE - Upper third of 135px height
+    int16_t faceRadius = 30; // CHANGE - Smaller radius
 
     // Draw the face in yellow
     tft.fillCircle(centerX, centerY, faceRadius, TFT_YELLOW);
 
-    // Draw eyes
+    // Draw eyes - ADJUST proportions
     int16_t eyeOffsetX = faceRadius / 2;
     int16_t eyeOffsetY = faceRadius / 3;
     int16_t eyeRadius = faceRadius / 8;
     tft.fillCircle(centerX - eyeOffsetX, centerY - eyeOffsetY, eyeRadius, TFT_BLACK);
     tft.fillCircle(centerX + eyeOffsetX, centerY - eyeOffsetY, eyeRadius, TFT_BLACK);
 
-    // For an inverted arc (curve up), move the mouth center *above* centerY
+    // Draw mouth - ADJUST position
     int16_t mouthCenterY = centerY - (faceRadius / 5);
     int16_t mouthRadius = faceRadius / 2;
-    // Angles from about 20° to 160° draw a curve that opens upward
     drawArc(tft, centerX, mouthCenterY, mouthRadius, 20, 160, TFT_BLACK);
 
-    // Show "Correct!!!" in green at the bottom
+    // Show "Correct!!!" in green at the bottom - ADJUST position and size
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
-    tft.setCursor(10, tft.height() - 30);
-    tft.println(" Correct!!!");
+    tft.setTextSize(3);     // CHANGE - Smaller text
+    tft.setCursor(60, 100); // CHANGE - Better position for 240x135
+    tft.println("Correct!");
 
     delay(2000);
 }
@@ -312,18 +319,158 @@ void handleZoneResource(TFT_eSPI &tft, const char *ZONE)
     {
         resourceCode = "LA";
         resourceName = "Lava";
-        // drawLava(tft); // Already handled in displayFunctions.cpp
     }
     else if (strcmp(ZONE, "forest") == 0)
     {
-        resourceCode = "FO";
-        resourceName = "Forest";
-        // drawWood(tft); // Or another forest resource
+        resourceCode = "PL";     // Changed from "FO"
+        resourceName = "Plants"; // Changed from "Forest"
     }
     else if (strcmp(ZONE, "city") == 0)
     {
-        resourceCode = "CI";
-        resourceName = "City";
-        // drawScrapMetal(tft); // Or another city resource
+        resourceCode = "MT";    // Changed from "CI"
+        resourceName = "Metal"; // Changed from "City"
     }
+    else if (strcmp(ZONE, "Water") == 0)
+    {
+        resourceCode = "WA";
+        resourceName = "Water";
+    }
+}
+
+void showRewardDisplay(TFT_eSPI &tft, const String &imageType, const String &displayText, int delayMs)
+{
+    tft.setRotation(1); // 240x135 landscape
+    tft.fillScreen(TFT_BLACK);
+    tft.setSwapBytes(true); // Fix for image display
+
+    // Draw image on LEFT half (0-119 pixels wide, full height 135)
+    if (imageType == "WA" || imageType == "Water")
+    {
+        // Use ORIGINAL water resource image (from src/resources/)
+        tft.fillRect(0, 0, 120, 135, TFT_BLUE);
+        drawWater(tft); // ← FIXED! Use original resource image
+    }
+    else if (imageType == "LA" || imageType == "Lava")
+    {
+        // Use ORIGINAL lava resource image (from src/resources/)
+        tft.fillRect(0, 0, 120, 135, TFT_RED);
+        drawLava(tft); // ← FIXED! Use original resource image
+    }
+    else if (imageType == "PL" || imageType == "Plants" || imageType == "forest")
+    {
+        // Use ORIGINAL wood/plants resource image (from src/resources/)
+        tft.fillRect(0, 0, 120, 135, TFT_GREEN);
+        drawWood(tft); // ← FIXED! Use original resource image
+    }
+    else if (imageType == "MT" || imageType == "Metal" || imageType == "city")
+    {
+        // Use ORIGINAL scrap metal resource image (from src/resources/)
+        tft.fillRect(0, 0, 120, 135, TFT_GRAY);
+        drawScrapMetal(tft); // ← FIXED! Use original resource image
+    }
+    else if (imageType == "KEY")
+    {
+        tft.fillRect(0, 0, 120, 135, TFT_BLACK);
+        drawKey(tft);
+    }
+    else if (imageType == "ZONE_COMPLETE")
+    {
+        // Use COMPLETION images (from src/messages/) ONLY for zone already completed
+        if (displayText.indexOf("Water") != -1) // ← Change to lowercase
+        {
+            tft.fillRect(0, 0, 120, 135, TFT_BLUE);
+            drawWaterComplete(tft);
+        }
+        else if (displayText.indexOf("Lava") != -1) // ← Change to lowercase
+        {
+            tft.fillRect(0, 0, 120, 135, TFT_RED);
+            drawLavaComplete(tft);
+        }
+        else if (displayText.indexOf("Forest") != -1) // ← Change to lowercase
+        {
+            tft.fillRect(0, 0, 120, 135, TFT_GREEN);
+            drawForestComplete(tft);
+        }
+        else if (displayText.indexOf("City") != -1) // ← Change to lowercase
+        {
+            tft.fillRect(0, 0, 120, 135, TFT_GRAY);
+            drawCityComplete(tft);
+        }
+        else
+        {
+            // Fallback: generic completion symbol
+            tft.fillRect(0, 0, 120, 135, TFT_BLUE);
+            tft.setTextColor(TFT_WHITE, TFT_BLUE);
+            tft.setTextSize(3);
+            tft.setCursor(30, 50);
+            tft.println("✓");
+        }
+    }
+    else if (imageType.startsWith("CREATURE:"))
+    {
+        String creatureName = imageType.substring(9);
+        tft.fillRect(0, 0, 120, 135, TFT_BLACK);
+        drawAnimalImage(tft, creatureName.c_str());
+    }
+    else
+    {
+        // Default: just fill left half with black
+        tft.fillRect(0, 0, 120, 135, TFT_BLACK);
+    }
+
+    tft.setSwapBytes(false); // Reset after images
+
+    // Draw vertical divider line
+    tft.drawLine(120, 0, 120, 135, TFT_WHITE);
+
+    // Draw text on RIGHT half (120-239 pixels wide)
+    // Center the text vertically and horizontally in the right half
+
+    tft.setTextSize(2);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+    // Calculate text positioning for centering
+    int16_t textWidth = displayText.length() * 12; // Approximate width (6 pixels per char * 2 for size 2)
+    int16_t textHeight = 16;                       // Height for text size 2
+
+    // Count number of lines (split by \n)
+    int lineCount = 1;
+    for (int i = 0; i < displayText.length(); i++)
+    {
+        if (displayText.charAt(i) == '\n')
+            lineCount++;
+    }
+
+    int totalTextHeight = lineCount * textHeight;
+
+    // Center vertically in right half
+    int16_t startY = (135 - totalTextHeight) / 2;
+
+    // Split text by newlines and center each line
+    String currentLine = "";
+    int lineNum = 0;
+
+    for (int i = 0; i <= displayText.length(); i++)
+    {
+        char c = (i < displayText.length()) ? displayText.charAt(i) : '\n'; // Add final newline
+
+        if (c == '\n' || i == displayText.length())
+        {
+            // Center this line horizontally in right half
+            int16_t lineWidth = currentLine.length() * 12; // Approximate width
+            int16_t startX = 120 + (120 - lineWidth) / 2;  // Center in right half (120px wide)
+
+            tft.setCursor(startX, startY + (lineNum * textHeight));
+            tft.print(currentLine);
+
+            currentLine = "";
+            lineNum++;
+        }
+        else
+        {
+            currentLine += c;
+        }
+    }
+
+    delay(delayMs); // Use the provided delay instead of fixed 1500ms
 }

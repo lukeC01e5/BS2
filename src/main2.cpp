@@ -2,8 +2,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include "GlobalDefs.h"
-#include "quizAnswers.h"
-#include "quizQuestions.h"
+#include "quizData.h"
+// #include "quizQuestions.h"
 #include "animals.h"
 #include <esp_system.h> // For esp_restart
 #include "displayFunctions.h"
@@ -12,9 +12,6 @@
 #include "resources/scrapMetal.h"
 #include "resources/water.h"
 #include "resources/lava.h"
-
-// Define TFT_GRAY if not provided by the library
-#define TFT_GRAY 0x8410 // RGB565 value for gray
 
 // **PRIZE RATIO CONFIGURATION**
 const int RESOURCE_WIN_CHANCE = 10; // Out of 30 (60% chance)
@@ -73,17 +70,19 @@ int countCompletedZones(const Player &player);
 bool postToDBAdd5Coin();
 AnimalInfo pickRandomCreature(int desiredId, const char *zone);
 
+String getQuizAnswer(int challengeCode, int questionNumber);
+String getQuizQuestion(int challengeCode, int questionNumber);
+
 void setup()
 {
     Serial.begin(115200);
-    Serial.println("=== Starting Setup ===");
-
     tft.init();
-    tft.setRotation(1);
+    tft.setRotation(1); // ADD THIS - Set default rotation to landscape
     tft.setTextSize(3);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0, 0);
+    tft.setSwapBytes(false);
 
     SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, SS_PIN);
 
@@ -115,15 +114,10 @@ void setup()
 
 void loop()
 {
-
     UserTag userTag;
-    // centre message near top
 
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(tft.width() / 4, tft.height() / 4);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.println(" Insert\n  Key");
-    // Prompt for RFID
+    // Show key image with "Insert Key" text
+    showRewardDisplay(tft, "KEY", "Insert\nKey", 500); // 500 milliseconds for key display
 
     while (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial())
     {
@@ -135,6 +129,7 @@ void loop()
         }
         delay(100);
     }
+
     tft.println("Tag present!");
 
     // Authenticate
@@ -182,7 +177,14 @@ void loop()
     }
     else
     {
-        player.challengeCode = block1Data.substring(0, 3).toInt();
+        // Parse the hashed code from RFID
+        int hashedCode = block1Data.substring(0, 3).toInt();
+        Serial.println("[DEBUG] Read hashed code from RFID: " + String(hashedCode));
+
+        // Convert hashed code to quiz set index using the mapping
+        player.challengeCode = getQuizSetFromHashedCode(hashedCode);
+        Serial.println("[DEBUG] Mapped to quiz set index: " + String(player.challengeCode));
+
         char wg = block1Data.charAt(3);
         player.wrongGuesses = (wg >= '0' && wg <= '9') ? wg - '0' : 0;
 
@@ -240,9 +242,9 @@ void loop()
     String val1, val2, val3;
     if (player.challengeCode >= 0 && player.challengeCode < 50)
     {
-        val1 = quizAnswers[player.challengeCode].value1;
-        val2 = quizAnswers[player.challengeCode].value2;
-        val3 = quizAnswers[player.challengeCode].value3;
+        val1 = getQuizAnswer(player.challengeCode, 1);
+        val2 = getQuizAnswer(player.challengeCode, 2);
+        val3 = getQuizAnswer(player.challengeCode, 3);
     }
     else
     {
@@ -258,12 +260,11 @@ void loop()
         bool doneWithThisQuestion = false;
         while (!doneWithThisQuestion)
         {
-            int thisCode = questionVals[qIndex].toInt();
             Serial.println("[DEBUG] Asking question # " + String(qIndex + 1) +
-                           " with codeValue=" + String(thisCode));
+                           " with challengeCode=" + String(player.challengeCode));
 
-            // Return which box is correct
-            int correctIndex = quizDisplay(thisCode, qIndex + 1);
+            // Use player.challengeCode directly, not the answer value
+            int correctIndex = quizDisplay(player.challengeCode, qIndex + 1);
 
             while (true)
             {
@@ -356,13 +357,13 @@ void loop()
             }
             else if (strcmp(ZONE, "forest") == 0)
             {
-                resourceCode = "FO";
-                resourceName = "Forest";
+                resourceCode = "PL";     // Changed from "FO"
+                resourceName = "Plants"; // Changed from "Forest"
             }
             else if (strcmp(ZONE, "city") == 0)
             {
-                resourceCode = "CI";
-                resourceName = "City";
+                resourceCode = "MT";    // Changed from "CI"
+                resourceName = "Metal"; // Changed from "City"
             }
         }
         else if (randomVal <= RESOURCE_WIN_CHANCE + CREATURE_LOW_CHANCE)
@@ -447,39 +448,15 @@ void loop()
             // 4. NOW display what was won (after successful RFID write)
             if (resourceCode != "")
             {
-                uint16_t bgColor = TFT_BLUE; // Default to water
-                if (strcmp(ZONE, "lava") == 0)
-                    bgColor = TFT_RED;
-                else if (strcmp(ZONE, "forest") == 0)
-                    bgColor = TFT_GREEN;
-                else if (strcmp(ZONE, "city") == 0)
-                    bgColor = TFT_GRAY;
-
-                tft.fillScreen(bgColor);
-                tft.setCursor(0, 0);
-                tft.setTextColor(TFT_WHITE, bgColor);
-                tft.println(" Resource\n Won:\n " + resourceName);
-                delay(2000);
-
-                // Show the resource image!
-                if (resourceCode == "WA")
-                    drawWater(tft);
-                else if (resourceCode == "LA")
-                    drawLava(tft);
-                else if (resourceCode == "FO")
-                    drawWood(tft);
-                else if (resourceCode == "CI")
-                    drawScrapMetal(tft);
+                // Create display text for resource
+                String displayText = "\n You Won:\n" + resourceName + "\nZone:\n" + String(ZONE) + "\nDone!";
+                showRewardDisplay(tft, resourceCode, displayText, 2000); // 3 seconds for resource wins
             }
             else if (creatureId > 0)
             {
-                tft.fillScreen(TFT_GREEN);
-                tft.setCursor(0, 0);
-                tft.setTextColor(TFT_BLACK, TFT_GREEN);
-                tft.println(" Creature\n Won:\n " + creatureName);
-                delay(2000);
-
-                drawAnimalImage(tft, creatureName.c_str());
+                // Create display text for creature
+                String displayText = "\n Creature\nWon!\n" + creatureName + "\nZone:\n" + String(ZONE) + "\nDone!";
+                showRewardDisplay(tft, "CREATURE:" + creatureName, displayText, 2000); // 4 seconds for creatures
             }
         }
         else
@@ -501,9 +478,12 @@ void loop()
     Serial.println("[DEBUG] Halted and stopped crypto.");
 
     // Reboot after a short delay
-    delay(3000);
+    delay(300);
     tft.fillScreen(TFT_BLACK);
     Serial.println("=== End Loop, rebooting now ===");
+
+    showRewardDisplay(tft, "KEY", "Remove\nKey", 5000); // 5 seconds for "Remove Key" message
+    delay(5000);
 
     esp_restart();
 }
@@ -535,22 +515,7 @@ int randomInRangeExclude(int minRange, int maxRange, int excludeVal)
 // Build a question prompt
 String buildQuestionPrompt(int codeValue, int questionNumber)
 {
-    if (codeValue >= 0 && codeValue <= 20)
-    {
-        int qIndex = questionNumber - 1;
-        if (qIndex < 0 || qIndex > 2)
-            qIndex = 0;
-        switch (qIndex)
-        {
-        case 0:
-            return questionSheet[codeValue].q1;
-        case 1:
-            return questionSheet[codeValue].q2;
-        case 2:
-            return questionSheet[codeValue].q3;
-        }
-    }
-    return "Question " + String(questionNumber) + ":";
+    return getQuizQuestion(codeValue, questionNumber);
 }
 
 /**
@@ -562,52 +527,47 @@ int quizDisplay(int codeValue, int questionNumber)
                    ", Q num=" + String(questionNumber));
 
     tft.fillScreen(TFT_BLACK);
-    tft.setCursor(0, 0);
+    tft.setRotation(1); // Landscape mode (240x135)
+
+    // Question text at top - smaller font for limited height
+    tft.setCursor(5, 5);
+    tft.setTextSize(3);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
     String questionText = buildQuestionPrompt(codeValue, questionNumber);
     tft.println(questionText);
 
-    int lineY = tft.height() / 5;
-    tft.drawLine(0, lineY, tft.width(), lineY, TFT_WHITE);
+    // Divider line
+    // int lineY = 25;
+    // tft.drawLine(0, lineY, tft.width(), lineY, TFT_WHITE);
 
-    String correctAnswer;
-    if (codeValue >= 0 && codeValue < 50)
-    {
-        if (questionNumber == 1)
-            correctAnswer = quizAnswers[codeValue].value1;
-        else if (questionNumber == 2)
-            correctAnswer = quizAnswers[codeValue].value2;
-        else
-            correctAnswer = quizAnswers[codeValue].value3;
-    }
-    else
-    {
-        correctAnswer = "0";
-    }
+    String correctAnswer = getQuizAnswer(codeValue, questionNumber);
 
     // Build 4 answer options (1 correct, 3 distractors)
     String answerOptions[4];
     answerOptions[0] = correctAnswer;
+
     for (int i = 1; i < 4; i++)
     {
         String distractor;
-        while (true)
+        int attempts = 0;
+        do
         {
-            int randIndex = random(0, 50);
-            int randValIndex = random(0, 3);
-            if (randValIndex == 0)
-                distractor = quizAnswers[randIndex].value1;
-            else if (randValIndex == 1)
-                distractor = quizAnswers[randIndex].value2;
-            else
-                distractor = quizAnswers[randIndex].value3;
+            int randIndex = random(0, 27); // Changed to 27 for your quiz set size
+            int randValIndex = random(1, 4);
+            distractor = getQuizAnswer(randIndex, randValIndex);
+            attempts++;
 
-            if (distractor != correctAnswer)
+            if (attempts > 20)
+            {
+                distractor = String(random(1, 100));
                 break;
-        }
+            }
+        } while (distractor == correctAnswer || distractor == "ERROR" || distractor.length() == 0);
+
         answerOptions[i] = distractor;
     }
+
     // Shuffle them
     for (int i = 0; i < 4; i++)
     {
@@ -627,20 +587,34 @@ int quizDisplay(int codeValue, int questionNumber)
         }
     }
 
-    const uint16_t boxColors[4] = {TFT_RED, TFT_YELLOW, TFT_BLUE, TFT_GREEN};
-    int regionH = tft.height() - lineY;
-    int regionW = tft.width();
-    int boxW = regionW / 2;
-    int boxH = regionH / 2;
+    // REMOVE THIS LINE (duplicate declaration):
+    // const uint16_t boxColors[4] = {TFT_RED, TFT_YELLOW, TFT_BLUE, TFT_GREEN};
+
+    // Box layout for 2x2 grid
+    int boxWidth = 110;
+    int boxHeight = 40;
+    int startY = 35;
+
+    // Box positions for 2x2 layout
+    int boxPositions[4][2] = {
+        {10, startY},      // Top-left (Red)
+        {125, startY},     // Top-right (Yellow)
+        {10, startY + 50}, // Bottom-left (Blue)
+        {125, startY + 50} // Bottom-right (Green)
+    };
+
+    // KEEP ONLY THIS ONE:
+    uint16_t boxColors[4] = {TFT_RED, TFT_YELLOW, TFT_BLUE, TFT_GREEN};
 
     for (int i = 0; i < 4; i++)
     {
-        int x = (i % 2) * boxW;
-        int y = lineY + (i / 2) * boxH;
-        tft.fillRect(x, y, boxW, boxH, boxColors[i]);
+        tft.fillRect(boxPositions[i][0], boxPositions[i][1], boxWidth, boxHeight, boxColors[i]);
+        tft.drawRect(boxPositions[i][0], boxPositions[i][1], boxWidth, boxHeight, TFT_WHITE);
+
+        tft.setCursor(boxPositions[i][0] + 10, boxPositions[i][1] + 15);
         tft.setTextColor(TFT_BLACK, boxColors[i]);
-        tft.setCursor(x + 10, y + boxH / 2);
-        tft.print(answerOptions[i]);
+        tft.setTextSize(3);
+        tft.println(answerOptions[i]);
     }
 
     Serial.println("[DEBUG] correctAnswer=" + correctAnswer +
@@ -686,9 +660,9 @@ void secretZoneMenu()
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setCursor(0, 0);
     tft.setTextSize(2);
-    tft.println("Secret Zone Menu");
-    tft.println("Use 2/3 to scroll");
-    tft.println("Press 4 to confirm");
+    // tft.println(" Secret Zone\n Menu");
+    tft.println(" Use yellow blue\n to scroll");
+    tft.println(" Press green\n to set");
 
     int menuZoneIndex = currentZoneIndex;
     bool confirmed = false;
@@ -715,7 +689,7 @@ void secretZoneMenu()
             tft.fillScreen(TFT_GREEN);
             tft.setCursor(0, 0);
             tft.setTextColor(TFT_BLACK, TFT_GREEN);
-            tft.println("ZONE Set to:");
+            tft.println(" ZONE Set to:");
             tft.println(ZONE_LIST[menuZoneIndex]);
             delay(1500);
             esp_restart();
@@ -738,9 +712,9 @@ bool updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char
         player.waterZone = true;
     if (lootCodes.indexOf("LA") != -1)
         player.lavaZone = true;
-    if (lootCodes.indexOf("FO") != -1)
+    if (lootCodes.indexOf("PL") != -1) // Changed from "FO" to "PL"
         player.forestZone = true;
-    if (lootCodes.indexOf("CI") != -1)
+    if (lootCodes.indexOf("MT") != -1) // Changed from "CI" to "MT"
         player.cityZone = true;
 
     // Scan for animal codes
@@ -771,12 +745,10 @@ bool updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char
         tft.println("All zones");
         tft.println("complete!");
         tft.println("Return Home");
-        delay(5000);
-        // esp_restart(); // <--- Add this line
-        //  return;
+        delay(3000);
     }
 
-    // If current zone is already completed, display message
+    // RESTORE THIS - Check if current zone is already completed (for initial RFID scan)
     bool alreadyCompleted = false;
     if (String(currentZone) == "water" && player.waterZone)
         alreadyCompleted = true;
@@ -789,17 +761,15 @@ bool updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char
 
     if (alreadyCompleted)
     {
-        tft.fillScreen(TFT_BLUE);
-        tft.setCursor(0, 0);
-        tft.setTextColor(TFT_WHITE, TFT_BLUE);
-        tft.println(currentZone);
-        tft.println(" zone\n completed");
-        /// tft.println("already!");
-        delay(3000);
-        // esp_restart(); // <--- Add this line
-        return true;
+        // Show zone already completed message with COMPLETION images
+        String displayText = String(currentZone) + "\nZone\n\nDone!";
+
+        // USE "ZONE_COMPLETE" to trigger completion images, not resource codes
+        showRewardDisplay(tft, "ZONE_COMPLETE", displayText, 2000); // 1 second for zone completion
+        return true;                                                // This will skip the quiz
     }
-    return false;
+
+    return false; // Zone not completed, proceed with quiz
 }
 
 int countCompletedZones(const Player &player)
@@ -828,6 +798,8 @@ AnimalInfo pickRandomCreature(int desiredId, const char *zone)
     const int animalCount = sizeof(ANIMALS) / sizeof(ANIMALS[0]);
     AnimalInfo candidates[animalCount];
     int count = 0;
+
+    // First try: exact match (desired ID + zone)
     for (int i = 0; i < animalCount; i++)
     {
         if (ANIMALS[i].id == desiredId && strcmp(ANIMALS[i].environment, zone) == 0)
@@ -835,8 +807,106 @@ AnimalInfo pickRandomCreature(int desiredId, const char *zone)
             candidates[count++] = ANIMALS[i];
         }
     }
-    if (count == 0)
-        return {"NO_CREATURE", 1, "normal", "NC"};
-    int index = random(0, count);
-    return candidates[index];
+
+    // If found exact matches, return one
+    if (count > 0)
+    {
+        int index = random(0, count);
+        return candidates[index];
+    }
+
+    // Fallback 1: Any creature from the same zone (ignore ID requirement)
+    count = 0;
+    for (int i = 0; i < animalCount; i++)
+    {
+        if (strcmp(ANIMALS[i].environment, zone) == 0)
+        {
+            candidates[count++] = ANIMALS[i];
+        }
+    }
+
+    if (count > 0)
+    {
+        int index = random(0, count);
+        Serial.println("[DEBUG] No exact ID match, giving zone creature: " + String(candidates[index].name));
+        return candidates[index];
+    }
+
+    // Fallback 2: Any creature with the desired ID (ignore zone requirement)
+    count = 0;
+    for (int i = 0; i < animalCount; i++)
+    {
+        if (ANIMALS[i].id == desiredId)
+        {
+            candidates[count++] = ANIMALS[i];
+        }
+    }
+
+    if (count > 0)
+    {
+        int index = random(0, count);
+        Serial.println("[DEBUG] No zone match, giving ID creature: " + String(candidates[index].name));
+        return candidates[index];
+    }
+
+    // Final fallback: Any creature at all
+    if (animalCount > 0)
+    {
+        int index = random(0, animalCount);
+        Serial.println("[DEBUG] No matches, giving random creature: " + String(ANIMALS[index].name));
+        return ANIMALS[index];
+    }
+
+    // This should never happen unless ANIMALS array is empty
+    return {"NO_CREATURE", 1, "normal", "NC"};
+}
+
+// Replace the existing quiz answer extraction with:
+String getQuizAnswer(int challengeCode, int questionNumber)
+{
+    if (challengeCode >= 0 && challengeCode < 27) // Changed from 50 to 27
+    {
+        String answer;
+        switch (questionNumber)
+        {
+        case 1:
+            answer = QUIZ_DATA[challengeCode].q1.answer;
+            break;
+        case 2:
+            answer = QUIZ_DATA[challengeCode].q2.answer;
+            break;
+        case 3:
+            answer = QUIZ_DATA[challengeCode].q3.answer;
+            break;
+        default:
+            return "ERROR"; // Changed from "0" to avoid confusion
+        }
+
+        // Ensure we return something valid, even for "0"
+        if (answer.length() == 0)
+        {
+            return "0"; // Fallback to "0" if answer is empty
+        }
+        return answer;
+    }
+    return "ERROR"; // Changed from "0" to avoid confusion
+}
+
+String getQuizQuestion(int challengeCode, int questionNumber)
+{
+    if (challengeCode >= 0 && challengeCode < 27) // Changed from 50 to 27
+    {
+        switch (questionNumber)
+        {
+        case 1:
+            return QUIZ_DATA[challengeCode].q1.question;
+        case 2:
+            return QUIZ_DATA[challengeCode].q2.question;
+        case 3:
+            return QUIZ_DATA[challengeCode].q3.question;
+        default:
+            return "Question not found";
+        }
+    }
+    return "Invalid code";
 }

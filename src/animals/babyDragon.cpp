@@ -9,7 +9,7 @@ void drawBabyDragon(TFT_eSPI &tft)
 
     int x = 20;
     int y = 8;
-    int width = 190;
+    int width = 120;
     int height = 128;
     tft.pushImage(x, y, width, height, babyDragon);
     delay(2000);

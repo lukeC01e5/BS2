@@ -237,5 +237,7 @@
  src/animals/babyRay.h src/animals/kitten.h src/animals/puppy.h \
  src/animals/babyTrex.h src/animals/flamingo.h src/animals/flameLily.h \
  src/animals/babyDragon.h src/animals/babyUnicorn.h src/animals/bearCub.h \
- src/animals/babyBird.h src/resources/lava.h src/resources/wood.h \
- src/resources/scrapMetal.h src/resources/water.h
+ src/animals/babyBird.h src/resources/wood.h src/resources/scrapMetal.h \
+ src/resources/water.h src/resources/lava.h src/messages/key.h \
+ src/messages/waterComplete.h src/messages/lavaComplete.h \
+ src/messages/cityComplete.h src/messages/forestComplete.h

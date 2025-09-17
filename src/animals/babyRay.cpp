@@ -16,9 +16,9 @@ void drawBabyRay(TFT_eSPI &tft)
     tft.setSwapBytes(true);
 
     // Example: push an image from array data
-    int x = 20;
-    int y = 8;
-    int width = 190;
+    int x = 0;
+    int y = 0;
+    int width = 120;
     int height = 128;
     tft.pushImage(x, y, width, height, babyRay); // If 'squidy' array is defined
     delay(2000);                                   // Show for 2 seconds
