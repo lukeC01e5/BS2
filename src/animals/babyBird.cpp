@@ -10,7 +10,7 @@ void drawBabyBird(TFT_eSPI &tft)
     int x = 0;
     int y = 0;
     int width = 120;
-    int height = 128;
+    int height = 135;
     tft.pushImage(x, y, width, height, babyBird);
     delay(2000);
 }

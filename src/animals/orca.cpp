@@ -11,10 +11,7 @@ void drawOrca(TFT_eSPI &tft)
     // Fill the background:
     tft.fillScreen(TFT_BLACK);
 
-    // Some placeholder text:
     tft.setCursor(0, 0);
-    //tft.setTextColor(TFT_WHITE, TFT_BLUE);
-    //tft.println("SQUIDY IMAGE PLACEHOLDER");
 
     tft.setSwapBytes(true);
 
@@ -22,7 +19,7 @@ void drawOrca(TFT_eSPI &tft)
     int x = 0;
     int y = 0;
     int width = 120;
-    int height = 128;
+    int height = 135;
     tft.pushImage(x, y, width, height, orca); // If 'squidy' array is defined
     delay(2000);                                // Show for 2 seconds
 }

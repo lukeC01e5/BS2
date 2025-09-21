@@ -14,7 +14,7 @@ void drawBabyShark(TFT_eSPI &tft)
     int x = 0;
     int y = 8;
     int width = 120;
-    int height = 128;
+    int height = 135;
     tft.pushImage(x, y, width, height, babyShark); // If 'squidy' array is defined
     delay(2000);                                   // Show for 2 seconds
 }

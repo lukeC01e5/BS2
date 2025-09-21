@@ -21,6 +21,12 @@
 #include "animals/bearCub.h"
 #include "animals/babyBird.h"
 
+#include "animals/botBot.h"
+#include "animals/flamey.h"
+#include "animals/bearCub.h"
+#include "animals/sprouty.h"
+#include "animals/tadpole.h"
+
 #include "resources/wood.h"
 #include "resources/scrapMetal.h"
 #include "resources/water.h" // Unchanged
@@ -46,7 +52,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLUE);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLUE);
-        tft.println("SQUIDY IMAGE PLACEHOLDER");
+        // tft.println("SQUIDY IMAGE PLACEHOLDER");
         drawSquidy(tft); // Should be: drawSquidy(tft);
     }
     else if (strcmp(creatureName, "ORCA") == 0)
@@ -54,7 +60,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println("ORCA IMAGE PLACEHOLDER");
+        // tft.println("ORCA IMAGE PLACEHOLDER");
         drawOrca(tft); // Should be: drawOrca(tft);
     }
     else if (strcmp(creatureName, "BABYSHARK") == 0)
@@ -62,7 +68,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println("BABYSHARK IMAGE PLACEHOLDER");
+        // tft.println("BABYSHARK IMAGE PLACEHOLDER");
         drawBabyShark(tft); // Should be: drawBabyShark(tft);
     }
     else if (strcmp(creatureName, "BABY_RAY") == 0)
@@ -70,7 +76,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println(" BABY_RAY IMAGE PLACEHOLDER");
+        // tft.println(" BABY_RAY IMAGE PLACEHOLDER");
         drawBabyRay(tft); // Should be: drawBabyRay(tft);
     }
     else if (strcmp(creatureName, "KITTEN") == 0)
@@ -78,7 +84,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println(" KITTEN IMAGE PLACEHOLDER");
+        // tft.println(" KITTEN IMAGE PLACEHOLDER");
         drawKitten(tft); // Should be: drawKitten(tft);
     }
     else if (strcmp(creatureName, "PUP") == 0)
@@ -86,7 +92,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println(" PUP IMAGE PLACEHOLDER");
+        // tft.println(" PUP IMAGE PLACEHOLDER");
         drawPuppy(tft); // Should be: drawPuppy(tft);
     }
     else if (strcmp(creatureName, "DINO_EGG") == 0)
@@ -94,7 +100,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println(" DINO_EGG IMAGE PLACEHOLDER");
+        // tft.println(" DINO_EGG IMAGE PLACEHOLDER");
         drawBabyTrex(tft); // Should be: drawBabyTrex(tft);
     }
     else if (strcmp(creatureName, "FLAMINGO") == 0)
@@ -102,7 +108,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println(" FLAMINGO IMAGE PLACEHOLDER");
+        // tft.println(" FLAMINGO IMAGE PLACEHOLDER");
         drawFlamingo(tft); // Should be: drawFlamingo(tft);
     }
     else if (strcmp(creatureName, "FLAME_LILY") == 0)
@@ -110,7 +116,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println(" FLAME_LILY IMAGE PLACEHOLDER");
+        // tft.println(" FLAME_LILY IMAGE PLACEHOLDER");
         drawFlameLily(tft); // Should be: drawFlameLily(tft);
     }
     else if (strcmp(creatureName, "BABY_DRAGON") == 0)
@@ -118,7 +124,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println(" BABY_DRAGON IMAGE PLACEHOLDER");
+        // tft.println(" BABY_DRAGON IMAGE PLACEHOLDER");
         drawBabyDragon(tft); // Should be: drawBabyDragon(tft);
     }
     else if (strcmp(creatureName, "UNICORN") == 0)
@@ -126,7 +132,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println(" UNICORN IMAGE PLACEHOLDER");
+        // tft.println(" UNICORN IMAGE PLACEHOLDER");
         drawBabyUnicorn(tft); // Should be: drawBabyUnicorn(tft);
     }
     else if (strcmp(creatureName, "BEAR_CUB") == 0)
@@ -134,7 +140,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println(" BEAR_CUB IMAGE PLACEHOLDER");
+        // tft.println(" BEAR_CUB IMAGE PLACEHOLDER");
         drawBearCub(tft); // Should be: drawBearCub(tft);
     }
     else if (strcmp(creatureName, "BIRDY") == 0)
@@ -143,10 +149,50 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.fillScreen(TFT_BLACK);
         tft.setCursor(0, 0);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.println(" BIRDY IMAGE PLACEHOLDER");
-        delay(1000); // Give time to see the placeholder text
+        // tft.println(" BIRDY IMAGE PLACEHOLDER");
+        // delay(1000); // Give time to see the placeholder text
         drawBabyBird(tft);
         Serial.println("[DEBUG] drawBabyBird call completed");
+    }
+    else if (strcmp(creatureName, "BOTBOT") == 0)
+    {
+        Serial.println("[DEBUG] BOTBOT matched! Calling drawBotBot...");
+        tft.fillScreen(TFT_BLACK);
+        tft.setCursor(0, 0);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        // tft.println(" BOTBOT IMAGE PLACEHOLDER");
+        // delay(1000); // Give time to see the placeholder text
+        drawBotBot(tft);
+    }
+    else if (strcmp(creatureName, "FLAMEY") == 0)
+    {
+        Serial.println("[DEBUG] FLAMEY matched! Calling drawFlamey...");
+        tft.fillScreen(TFT_BLACK);
+        tft.setCursor(0, 0);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        // tft.println(" FLAMEY IMAGE PLACEHOLDER");
+        // delay(1000); // Give time to see the placeholder text
+        drawFlamey(tft);
+    }
+    else if (strcmp(creatureName, "SPROUTY") == 0)
+    {
+        Serial.println("[DEBUG] SPROUTY matched! Calling drawSprouty...");
+        tft.fillScreen(TFT_BLACK);
+        tft.setCursor(0, 0);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        // tft.println(" SPROUTY IMAGE PLACEHOLDER");
+        // delay(1000); // Give time to see the placeholder text
+        drawSprouty(tft);
+    }
+    else if (strcmp(creatureName, "TADPOLE") == 0)
+    {
+        Serial.println("[DEBUG] TADPOLE matched! Calling drawTadpole...");
+        tft.fillScreen(TFT_BLACK);
+        tft.setCursor(0, 0);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        // tft.println(" TADPOLE IMAGE PLACEHOLDER");
+        // delay(1000); // Give time to see the placeholder text
+        drawTadpole(tft);
     }
     else
     {
@@ -156,7 +202,7 @@ void drawAnimalImage(TFT_eSPI &tft, const char *creatureName)
         tft.setTextColor(TFT_RED, TFT_BLACK);
         tft.println("No image for: ");
         tft.println(creatureName);
-        delay(3000);
+        delay(2000);
     }
 }
 
@@ -344,19 +390,19 @@ void showRewardDisplay(TFT_eSPI &tft, const String &imageType, const String &dis
     tft.setSwapBytes(true); // Fix for image display
 
     // Draw image on LEFT half (0-119 pixels wide, full height 135)
-    if (imageType == "WA" || imageType == "Water")
+    if (imageType == "WA" || imageType == "water")
     {
         // Use ORIGINAL water resource image (from src/resources/)
         tft.fillRect(0, 0, 120, 135, TFT_BLUE);
         drawWater(tft); // ← FIXED! Use original resource image
     }
-    else if (imageType == "LA" || imageType == "Lava")
+    else if (imageType == "LA" || imageType == "lava")
     {
         // Use ORIGINAL lava resource image (from src/resources/)
         tft.fillRect(0, 0, 120, 135, TFT_RED);
         drawLava(tft); // ← FIXED! Use original resource image
     }
-    else if (imageType == "PL" || imageType == "Plants" || imageType == "forest")
+    else if (imageType == "PL" || imageType == "Plants" || imageType == "wood")
     {
         // Use ORIGINAL wood/plants resource image (from src/resources/)
         tft.fillRect(0, 0, 120, 135, TFT_GREEN);
@@ -375,29 +421,37 @@ void showRewardDisplay(TFT_eSPI &tft, const String &imageType, const String &dis
     }
     else if (imageType == "ZONE_COMPLETE")
     {
+        Serial.println("[DEBUG] ZONE_COMPLETE triggered");
+        Serial.println("[DEBUG] Display text: " + displayText);
+
         // Use COMPLETION images (from src/messages/) ONLY for zone already completed
-        if (displayText.indexOf("Water") != -1) // ← Change to lowercase
+        if (displayText.indexOf("water") != -1) // ← CHANGED to lowercase
         {
+            Serial.println("[DEBUG] Calling drawWaterComplete()");
             tft.fillRect(0, 0, 120, 135, TFT_BLUE);
             drawWaterComplete(tft);
         }
-        else if (displayText.indexOf("Lava") != -1) // ← Change to lowercase
+        else if (displayText.indexOf("lava") != -1) // ← CHANGED to lowercase
         {
+            Serial.println("[DEBUG] Calling drawLavaComplete()");
             tft.fillRect(0, 0, 120, 135, TFT_RED);
             drawLavaComplete(tft);
         }
-        else if (displayText.indexOf("Forest") != -1) // ← Change to lowercase
+        else if (displayText.indexOf("forest") != -1) // ← CHANGED to lowercase
         {
+            Serial.println("[DEBUG] Calling drawForestComplete()");
             tft.fillRect(0, 0, 120, 135, TFT_GREEN);
             drawForestComplete(tft);
         }
-        else if (displayText.indexOf("City") != -1) // ← Change to lowercase
+        else if (displayText.indexOf("city") != -1) // ← CHANGED to lowercase
         {
+            Serial.println("[DEBUG] Calling drawCityComplete()");
             tft.fillRect(0, 0, 120, 135, TFT_GRAY);
             drawCityComplete(tft);
         }
         else
         {
+            Serial.println("[DEBUG] No zone match found, using fallback");
             // Fallback: generic completion symbol
             tft.fillRect(0, 0, 120, 135, TFT_BLUE);
             tft.setTextColor(TFT_WHITE, TFT_BLUE);

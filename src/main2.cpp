@@ -21,8 +21,6 @@ const int TOTAL_RANDOM_RANGE = 30;  // Total range for random selection
 
 Preferences preferences;
 
-// #include "animals/squidy.h"
-
 const char *ZONE_LIST[] = {"water", "lava", "forest", "city"};
 const int ZONE_COUNT = 4;
 int currentZoneIndex = 0;
@@ -69,7 +67,6 @@ bool updateZoneBoolsFromLoot(Player &player, const String &lootCodes, const char
 int countCompletedZones(const Player &player);
 bool postToDBAdd5Coin();
 AnimalInfo pickRandomCreature(int desiredId, const char *zone);
-
 String getQuizAnswer(int challengeCode, int questionNumber);
 String getQuizQuestion(int challengeCode, int questionNumber);
 
@@ -107,7 +104,7 @@ void setup()
 
     // Initialize MFRC522
     mfrc522.PCD_Init();
-    delay(1000);
+    delay(500);
 
     Serial.println("=== Setup Complete ===\n");
 }
@@ -348,22 +345,22 @@ void loop()
             if (strcmp(ZONE, "water") == 0)
             {
                 resourceCode = "WA";
-                resourceName = "Water";
+                resourceName = "water";
             }
             else if (strcmp(ZONE, "lava") == 0)
             {
                 resourceCode = "LA";
-                resourceName = "Lava";
+                resourceName = "lava";
             }
             else if (strcmp(ZONE, "forest") == 0)
             {
                 resourceCode = "PL";     // Changed from "FO"
-                resourceName = "Plants"; // Changed from "Forest"
+                resourceName = "plants"; // Changed from "Forest"
             }
             else if (strcmp(ZONE, "city") == 0)
             {
                 resourceCode = "MT";    // Changed from "CI"
-                resourceName = "Metal"; // Changed from "City"
+                resourceName = "metal"; // Changed from "City"
             }
         }
         else if (randomVal <= RESOURCE_WIN_CHANCE + CREATURE_LOW_CHANCE)
@@ -537,10 +534,6 @@ int quizDisplay(int codeValue, int questionNumber)
     String questionText = buildQuestionPrompt(codeValue, questionNumber);
     tft.println(questionText);
 
-    // Divider line
-    // int lineY = 25;
-    // tft.drawLine(0, lineY, tft.width(), lineY, TFT_WHITE);
-
     String correctAnswer = getQuizAnswer(codeValue, questionNumber);
 
     // Build 4 answer options (1 correct, 3 distractors)
@@ -586,9 +579,6 @@ int quizDisplay(int codeValue, int questionNumber)
             break;
         }
     }
-
-    // REMOVE THIS LINE (duplicate declaration):
-    // const uint16_t boxColors[4] = {TFT_RED, TFT_YELLOW, TFT_BLUE, TFT_GREEN};
 
     // Box layout for 2x2 grid
     int boxWidth = 110;

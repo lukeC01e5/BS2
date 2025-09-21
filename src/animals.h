@@ -47,9 +47,9 @@ static const AnimalInfo ANIMALS[] = {
     {"MONSTER_LILY", 10, "lava", "ML"},
     {"BEAR_CUB", 3, "forest", "BC"},
     {"MOSS_BEAR", 13, "forest", "MB"},
-    {"LAVA_SPRITE", 2, "lava", "LS"},      // ID 2 lava creature
-    {"EMBER_WISP", 2, "lava", "EW"},       // Another ID 2 lava creature
-    {"WATER_SPIRIT", 3, "water", "WS"},    // More ID 3 water creatures
-    {"STEAM_ELEMENTAL", 3, "lava", "SE"}}; // More ID 3 lava creatures
+    //{"LAVA_SPRITE", 2, "lava", "LS"},      // ID 2 lava creature
+    {"FLAMEY", 2, "lava", "EW"},       // Another ID 2 lava creature
+    {"SPLASH", 3, "water", "WS"},    // More ID 3 water creatures
+    {"BOTBOT", 3, "lava", "SE"}}; // More ID 3 lava creatures
 
 #endif // ANIMALS_H
